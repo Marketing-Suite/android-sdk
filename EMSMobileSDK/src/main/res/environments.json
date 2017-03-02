@@ -1,0 +1,76 @@
+{
+  "environments": [
+    {
+      "name": "Push SandboxF",
+      "region": "North America",
+      "envName": "Push Sandbox",
+      "envStatus": "Sandbox",
+      "envNotes": "Sandbox only - do not use with real data",
+      "endPointPush": "cs.sbox.eccmp.com",
+      "custID": "100",
+      "appIDiOS": "ce64adbd-8082-44be-b74b-f2baa84c242a",
+      "appIDAndroid": "a5090db4-03c6-43dc-9b53-2d6030a23c6e",
+      "appIDWindows": ""
+    },
+    {
+      "name": "Production Cust 100F",
+      "region": "North America",
+      "envName": "Cust 100",
+      "envStatus": "Production",
+      "envNotes": "Cust 100 Demo",
+      "endPointPush": "xts.eccmp.com",
+      "custID": "100",
+      "appIDiOS": "1627a48d-00ba-4d9f-83bb-f932a6f5a0b5",
+      "appIDAndroid": "5c183c77-8fc6-4525-a8e2-33324ba41a8c",
+      "appIDWindows": ""
+    },
+    {
+      "name": "Training ClassF",
+      "region": "North America",
+      "envName": "Cust 446",
+      "envStatus": "Production",
+      "envNotes": "Cust 446 Demo",
+      "endPointPush": "xts.eccmp.com",
+      "custID": "446",
+      "appIDiOS": "4ad71aec-5fae-4420-a759-785adc406554",
+      "appIDAndroid": "7cb9014d-f6e4-460a-9a50-1c93eae47877",
+      "appIDWindows": ""
+    },
+    {
+      "name": "Production NY5F",
+      "region": "North America",
+      "envName": "NY5",
+      "envStatus": "Production",
+      "envNotes": "NY5 Demo",
+      "endPointPush": "xts.eccmp.com",
+      "custID": "394",
+      "appIDiOS": "12879864-280f-4ce0-a298-411c333b46f8",
+      "appIDAndroid": "60ffef8e-8a4f-44d7-b0bc-67c95cfd596a",
+      "appIDWindows": ""
+    },
+    {
+      "name": "Production EMEAF",
+      "region": "EMEA",
+      "envName": "",
+      "envStatus": "Production",
+      "envNotes": "Production environment",
+      "endPointPush": "xts.ccmp.com",
+      "custID": "",
+      "appIDiOS": "",
+      "appIDAndroid": "",
+      "appIDWindows": ""
+    },
+    {
+      "name": "AWS Sandbox1F",
+      "region": "US Standard",
+      "envName": "Amazon Eastern",
+      "envStatus": "Sandbox",
+      "envNotes": "Sandbox only - do not use with real data",
+      "endPointPush": "sandaws1.emssand.com",
+      "custID": "",
+      "appIDiOS": "",
+      "appIDAndroid": "",
+      "appIDWindows": ""
+    }
+  ]
+}

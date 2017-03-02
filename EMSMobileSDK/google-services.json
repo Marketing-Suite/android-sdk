@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "886833274259",
+    "firebase_url": "https://androidmobilesdk.firebaseio.com",
+    "project_id": "androidmobilesdk",
+    "storage_bucket": "androidmobilesdk.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:886833274259:android:43672cf1570dfbbf",
+        "android_client_info": {
+          "package_name": "experian.mobilesdk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "886833274259-jb15akvoucs6nt49s24onjo009t57l58.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwmLLKX7m7cE8VhiKm5SQI-oxz7VFuJ0o"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
