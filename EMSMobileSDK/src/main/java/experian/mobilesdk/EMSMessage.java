@@ -3,17 +3,15 @@ package experian.mobilesdk;
 import java.util.Date;
 
 /**
- * Created by Blaize Stewart on 1/10/2017.
- *
  * This class services as a DTO for Messages that are sent to the Queue.
  */
-
  class EMSMessage {
 
     private long timeStamp;
     private MessageStatus messageStatus;
     private String url;
     private String method;
+    private String contentType;
     private Object body;
     private IEMSCallback callback;
 
@@ -59,6 +57,15 @@ import java.util.Date;
 
     public void setMethod(String method) {
         this.method = method;
+    }
+
+    // content type
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 
 

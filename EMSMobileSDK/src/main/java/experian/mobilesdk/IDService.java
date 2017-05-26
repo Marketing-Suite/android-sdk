@@ -7,8 +7,6 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
 /**
- * Created by Blaize Stewart on 1/10/2017.
- *
  * This is the Firebase ID Services that gets called when a Device Token changes.
  */
 

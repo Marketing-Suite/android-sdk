@@ -7,10 +7,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.util.ArrayMap;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -45,15 +47,12 @@ public class EMSMobileSDK {
     private String Token;
     private Region Region;
     private String EndPoint;
+    private String APIPostEndPoint;
     private String PRID;
     private Readable dataReader;
     private Persistable dataWriter;
-
-
     private boolean startNotified = false;
     private IEMSCallback PushCallback;
-    private Class  CallbackClass = null;
-    private int CallbackIcon = 0;
 
     //ID's used by the  notification PI in Android
     static final int NOTIFICATION_ID = 109011;
@@ -68,12 +67,25 @@ public class EMSMobileSDK {
     private EMSMobileSDK() {
     }
 
-    //North American is the Default Region.
+    /**
+     * Initialization of the SDK.  This method should be called before any other calls to the EMS SDK.
+     * @param ctx  the application context
+     * @param appIntent the application intent - used for registering app open on push notification received
+     * @param AppID the CCMP application ID for the application
+     * @param CustomerID the CCMP customer ID for the application
+     */
     public void init(Context ctx, Intent appIntent, String AppID, int CustomerID) {
         this.init(ctx, appIntent, AppID, CustomerID, Region.NORTH_AMERICA);
     }
 
-    //The main init method -- this is called by the application.
+    /**
+     * Initialization of the SDK.  This method should be called before any other calls to the EMS SDK.
+     * @param ctx  the application context
+     * @param appIntent the application intent - used for registering app open on push notification received
+     * @param AppID the CCMP application ID for the application
+     * @param CustomerID the CCMP customer ID for the application
+     * @param region the Region for your instance of CCMP
+     */
     public void init(Context ctx, Intent appIntent, String AppID, int CustomerID, Region region) {
         context = ctx;
 
@@ -84,7 +96,7 @@ public class EMSMobileSDK {
         }
 
         try{
-           context.bindService(intent, mConnection, 0);
+            context.bindService(intent, mConnection, 0);
         }
         catch(Exception ex){
             Log.d("EMSSDK", ex.getMessage());
@@ -106,64 +118,91 @@ public class EMSMobileSDK {
             }
 
             if(this.PushCallback != null){
-                this.PushCallback.Callback(responseData);
+                this.PushCallback.Callback(responseData.toString());
             }
-
-            EMSMessage msg = new EMSMessage();
-
         }
 
         this.AppID = AppID;
         this.CustomerID = CustomerID;
         this.Region = region;
 
-
         switch (region){
             case NORTH_AMERICA_SANDBOX:
                 this.EndPoint = "http://cs.sbox.eccmp.com";
+                this.APIPostEndPoint = "http://cs.sbox.eccmp.com/ats";
                 break;
             case EMEA:
                 this.EndPoint = "https://xts.ccmp.eu";
+                this.APIPostEndPoint = "https://ats.ccmp.eu/ats";
                 break;
             case JAPAN:
-                this.EndPoint = "http://xts.ccmp.experian.co.jp";
+                this.EndPoint = "https://xts.ccmp.experian.co.jp";
+                this.APIPostEndPoint = "https://ats.ccmp.experian.co.jp/ats";
                 break;
             case NORTH_AMERICA:
             default:
                 this.EndPoint = "https://xts.eccmp.com";
+                this.APIPostEndPoint = "https://ats.eccmp.com/ats";
                 break;
         }
 
-
         this.dataReader = new AndroidIO();
         this.dataWriter = new AndroidIO();
-
     }
 
-    //Register a push callback with a simple callback method.
+    /**
+     * Registers a callback to be called for any incoming Push notifications
+     * @param pushCallback function to be called when a Push notification is received
+     */
     public void RegisterPushCallback(IEMSCallback pushCallback){
-
-        this.PushCallback = pushCallback;
-        this.CallbackClass = null;
-        this.CallbackIcon = 0;
+        RegisterPushCallback(pushCallback, 0);
     }
 
-    //Registers a push calback with a simple callback method and/or an activity class.
-    //In the case of an activity class, the activity will be started.
-    // In both cases, a Notification ivon will be displayed and handled by the SDK.
-    // The Icon points to a resource for Push Notifications.
-    public void RegisterPushCallback(IEMSCallback pushCallback, Class ActivityClass, int Icon){
-        this.PushCallback = pushCallback;
-        this.CallbackClass = ActivityClass;
-        this.CallbackIcon = Icon;
+    /**
+     * Registers a push calback with a simple callback method and/or an activity class.
+     * In the case of an activity class, the activity will be started.
+     * In both cases, a Notification ivon will be displayed and handled by the SDK.
+     * @param pushCallback function to be called when a Push notification is received
+     * @param notificationIcon points to a resource for Push Notifications.
+     */
+    public void RegisterPushCallback(IEMSCallback pushCallback, int notificationIcon){
 
+        // save callback
+        PushCallback = pushCallback;
+
+        // save in preferences to is available to service
+        setNotificationIcon(notificationIcon);
+    }
+
+    /*
+    public void getRegistrationToken(IEMSCallback callback) {
+            String url = EndPoint + "/xts/getregistrationtoken/cust/" + CustomerID + "/application/" + AppID + "/prid/" + PRID;
+            QueueMessage(url, "GET", "application/json", "", callback);
+    }
+    */
+
+    /**
+     * Performs API Post and notifies callback
+     * @param formId id of form to post
+     * @param data array of key/value pairs
+     * @param callback function to be called when post is received
+     */
+    public void APIPost(int formId, ArrayMap<String, String> data, IEMSCallback callback) {
+
+        // core values
+        String body = "cr=" + CustomerID + "&fm=" + formId;
+
+        // then params
+        for (Map.Entry<String, String> param : data.entrySet())
+            body += "&" + param.getKey() + "=" + param.getValue();
+
+        QueueMessage(APIPostEndPoint + "/post.aspx", "POST", "application/x-www-form-urlencoded", body, callback);
     }
 
     //The Notification tap is handled here with the calling intent.
-    void notifyPushNotificationTap(Intent intent){
+    void notifyPushNotificationTap(Context ctx, Intent intent){
 
-        NotificationManager mNotifyMgr =  (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-
+        NotificationManager mNotifyMgr =  (NotificationManager)  ctx.getSystemService(NOTIFICATION_SERVICE);
         mNotifyMgr.cancel(NOTIFICATION_TAG, NOTIFICATION_ID);
 
         //If the ems_open property is set, CCMP is notified that the application was opened by way of a Notification Tap.
@@ -171,35 +210,35 @@ public class EMSMobileSDK {
             Log.d("","App Open URL: " + intent.getStringExtra("ems_open"));
 
             class appOpen implements IEMSCallback{
+
                 @Override
-                public void Callback(JSONObject dataResponse) {
+                public void Callback(String dataResponse) {
                     Log.d("", "App was opened!");
                 }
             }
 
-            QueueMessage(intent.getStringExtra("ems_open"),"GET", "",new appOpen());
+            QueueMessage(intent.getStringExtra("ems_open"),"GET", "application/json", "",new appOpen());
 
         }
 
-        //If the CallbackClass is set, the SDK will attempt to start the activity.
-        if (this.CallbackClass != null){
-
-            Intent activityIntent = new Intent(context, this.CallbackClass);
-
-            activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(activityIntent);
-        }
+        // launch app
+        Intent launchIntent = ctx.getPackageManager().getLaunchIntentForPackage(ctx.getPackageName());
+        ctx.startActivity(launchIntent);
     }
 
     //This method is called whenever a Push Notification comes in.
-    void notifyPush(JSONObject data){
+    void notifyPush(Context ctx, JSONObject data){
 
-        //Constructs the Notification area message and displays it.
-        if (this.CallbackIcon > 0){
+        // get icon
+        int notificationIcon = getNotificationIcon(ctx);
 
-            Builder mBuilder =   new Builder(context);
+        //Constructs the Notification area message and displays it if notification icon set
+        if (notificationIcon > 0){
 
-            mBuilder.setSmallIcon(this.CallbackIcon);
+            Builder mBuilder = new Builder(ctx);
+
+            // set icon
+            mBuilder.setSmallIcon(notificationIcon);
 
             //Attempts to extract the tile from the Push Notification.
             if (data.has("title")){
@@ -225,11 +264,11 @@ public class EMSMobileSDK {
                 e.printStackTrace();
             }
 
-            PendingIntent resultPendingIntent = PendingIntent.getBroadcast(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent resultPendingIntent = PendingIntent.getBroadcast(ctx, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             mBuilder.setContentIntent(resultPendingIntent);
 
-            NotificationManager mNotifyMgr =  (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+            NotificationManager mNotifyMgr =  (NotificationManager) ctx.getSystemService(NOTIFICATION_SERVICE);
 
             mNotifyMgr.notify(NOTIFICATION_TAG, NOTIFICATION_ID, mBuilder.build());
 
@@ -237,7 +276,7 @@ public class EMSMobileSDK {
 
         //Calls callback method.
         if (this.PushCallback != null){
-            this.PushCallback.Callback(data);
+            this.PushCallback.Callback(data.toString());
         }
 
     }
@@ -284,10 +323,16 @@ public class EMSMobileSDK {
                 body = payload.toString();
 
                 class deviceRegistered implements IEMSCallback{
+
                     @Override
-                    public void Callback(JSONObject dataResponse) {
+                    public void Callback(String dataResponse) {
+
                         try {
-                            EMSMobileSDK.Default().setPRID(dataResponse.getString("Push_Registration_Id"));
+
+                            if (!dataResponse.equals("Error")) {
+                                JSONObject jObj = new JSONObject(dataResponse);
+                                EMSMobileSDK.Default().setPRID(jObj.getString("Push_Registration_Id"));
+                            }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -301,7 +346,7 @@ public class EMSMobileSDK {
                     verb = "POST";
                 }
 
-                QueueMessage(DeviceRegURL,verb,body, new deviceRegistered());
+                QueueMessage(DeviceRegURL,verb, "application/json", body, new deviceRegistered());
             }
 
         }
@@ -309,17 +354,18 @@ public class EMSMobileSDK {
     }
 
     //Allows users to queue messages.
-    void QueueMessage(String URL , String method, Object body){
-        this.QueueMessage(URL, method, body, null);
+    void QueueMessage(String URL , String method, String contentType, Object body){
+        this.QueueMessage(URL, method, contentType, body, null);
     }
 
     //Allows users to queue messages with a callback.
-    void QueueMessage(String URL , String method, Object body, IEMSCallback Callback){
+    void QueueMessage(String URL , String method, String contentType, Object body, IEMSCallback Callback){
 
         EMSMessage msg = new EMSMessage();
         msg.setBody(body);
         msg.setUrl(URL);
         msg.setMethod(method);
+        msg.setContentType(contentType);
         msg.setCallback(Callback);
 
         if (mBoundService != null){
@@ -359,6 +405,10 @@ public class EMSMobileSDK {
         return startNotified;
     }
 
+    /**
+     * Returns the PRID created by CCMP to identify this device
+     * @return returns the PRID created by CCMP to identify this device
+     */
     public String getPRID() {
         return PRID;
     }
@@ -372,6 +422,10 @@ public class EMSMobileSDK {
         this.PRID = PRID;
     }
 
+    /**
+     * Returns the Device Token assigned by Google Services
+     * @return returns the device token assigned by Google Services
+     */
     public String getToken() {
         return Token;
     }
@@ -380,12 +434,36 @@ public class EMSMobileSDK {
         Token = token;
     }
 
+    /**
+     * Returns the CCMP Application ID used to initialize the EMS SDK
+     * @return Returns the CCMP Application ID used to initialize the EMS SDK
+     */
     public String getAppID() {
         return AppID;
     }
 
+    /**
+     * Returns the CCMP Customer ID used to initialize the EMS SDK
+     * @return Returns the CCMP Customer ID used to initialize the EMS SDK
+     */
     public int getCustomerID(){ return this.CustomerID;}
 
+    /**
+     * Returns the CCMP Region used to initialize the EMS SDK
+     * @return Returns the CCMP Region used to initialize the EMS SDK
+     */
     public String getRegion() {return this.Region == null ? "" : this.Region.toString();}
+
+    private void setNotificationIcon(int notificationIcon) {
+        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt("NotificationIcon", notificationIcon);
+        editor.commit();
+    }
+
+    private int getNotificationIcon(Context ctx) {
+        SharedPreferences sharedPref = ctx.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+        return sharedPref.getInt("NotificationIcon", 0);
+    }
 
 }

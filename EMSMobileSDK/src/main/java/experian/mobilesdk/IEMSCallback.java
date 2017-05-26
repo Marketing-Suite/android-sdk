@@ -5,9 +5,9 @@ import org.json.JSONObject;
 /**
  * Created by Blaize Stewart on 1/19/2017.
  *
- * A simple interface to enable Callbacks with JSON payloads.
+ * A simple interface to enable Callbacks with string payloads.
  */
 
 public interface IEMSCallback {
-    public void Callback(JSONObject dataResponse);
+    public void Callback(String dataResponse);
 }

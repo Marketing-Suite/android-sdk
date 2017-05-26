@@ -1,5 +1,9 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
 
+
+version version
+group group
 
 android {
     compileSdkVersion 25
@@ -36,5 +40,20 @@ dependencies {
     compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
 }
 
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "${repo}"){
+                authentication(userName: "${repo_username}", password: "${repo_password}")
+                pom.project {
+                    properties {
+                        revision sha
+                        build_number build_number
+                    }
+                }
+            }
+        }
+    }
+}
 
 apply plugin: 'com.google.gms.google-services'

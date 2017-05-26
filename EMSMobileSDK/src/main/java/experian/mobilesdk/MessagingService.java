@@ -19,12 +19,9 @@ import org.json.JSONObject;
 import java.util.Map;
 
 /**
- * Created by Blaize Stewart on 1/10/2017.
- *
  * Firebase Messaging is the Google API for handling Push Notifications on Android.
  * This class extends the base Messaging Services.
  */
-
 public class MessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MessagingService";
@@ -51,7 +48,7 @@ public class MessagingService extends FirebaseMessagingService {
             }
 
             //Calls the notifyPush message on the EMSSDK with the data from the push.
-            EMSMobileSDK.Default().notifyPush(data);
+            EMSMobileSDK.Default().notifyPush(getApplicationContext(), data);
         }
 
         if (remoteMessage.getNotification() != null) {
@@ -61,8 +58,8 @@ public class MessagingService extends FirebaseMessagingService {
 
     }
 
-     //Simple send notification method. -- not being used.
-     private void sendNotification(String messageBody) {
+    //Simple send notification method. -- not being used.
+    private void sendNotification(String messageBody) {
         Log.d(TAG, "EMSMessage Notification Body: " + messageBody);
 
     }

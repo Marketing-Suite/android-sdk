@@ -1,8 +1,6 @@
 package experian.mobilesdk;
 
 /**
- * Created by Blaize Stewart on 1/10/2017.
- *
  * These are the statuses used by the Message Queue.
  */
 

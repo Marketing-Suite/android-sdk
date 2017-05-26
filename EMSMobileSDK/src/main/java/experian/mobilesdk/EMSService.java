@@ -17,8 +17,6 @@ import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static java.lang.Process.*;
 
 /**
- * Created by Blaize Stewart on 1/13/2017.
- *
  * This class acts a background process on Android to handle the Message Queue to ensure that
  * messages get delivered.
  */

@@ -1,3 +1,8 @@
+##
+# Intended Audience
+
+This document, source code, and resulting compiled library (SDK) is intended to be used in conjunction with Marketing Suite.  Use of the SDK is only supported after approval from Marketing Suite Client Developer Relations, and your account manager.
+
 # Integrating CCMP with the Android Mobile SDK
 
 CCMP enables marketers to target mobile devices running native applications for iOS and Android. The Android platform uses Firebase, the successor to Google Cloud Messaging (GCM). With push notifications, there are three parties in play: CCMP, Firebase, and the user's device with an app installed. The basic flow is as follows for Push Notifications.
@@ -23,6 +28,7 @@ To make all this work, associations need to be set up between all three parties.
 * Integrate the SDK with an App
 * Adding the App to CCMP
 * EMSMobileSDK Methods and Properties
+* Sequence Diagram
 
 ### Create or open a new project in Android Studio
 
@@ -263,9 +269,9 @@ The **init** method initializes the SDK from the application so that Push Notifi
 
 **QueueMessage**(String **URL** , String **method**, Object **body**, ICallback **Callback**)
 
+### Sequence Diagram
 
-
-
+![Sequence Diagram](images/sequence-diagram.png)
 
 
 

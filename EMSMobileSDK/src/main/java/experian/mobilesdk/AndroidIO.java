@@ -20,12 +20,9 @@ import java.util.ArrayList;
 
 
 /**
- * Created by Blaize Stewart on 1/10/2017.
- *
  * This class handles the File IO for data persistence for the SDK.
  * All data is written to persistent device storage .
  */
-
 class AndroidIO implements Persistable, Readable {
 
 
@@ -57,6 +54,7 @@ class AndroidIO implements Persistable, Readable {
                 jsonMsg.put("URL", msg.getUrl());
                 jsonMsg.put("MessageStatus", msg.getMessageStatus());
                 jsonMsg.put("Body", msg.getBody());
+                jsonMsg.put("ContentType", msg.getContentType());
                 jsonMsg.put("Method", msg.getMethod());
                 jsonEMSArray.put(jsonMsg);
             } catch (JSONException e) {
@@ -141,6 +139,7 @@ class AndroidIO implements Persistable, Readable {
                 msg.setUrl(jMsg.getString("URL"));
                 msg.setTimeStamp((long)jMsg.getDouble("TimeStamp"));
                 msg.setMethod(jMsg.getString("Method"));
+                msg.setContentType(jMsg.getString("ContentType"));
                 msg.setBody(jMsg.getString("Body"));
                 queue.add(msg);
             } catch (Exception e) {

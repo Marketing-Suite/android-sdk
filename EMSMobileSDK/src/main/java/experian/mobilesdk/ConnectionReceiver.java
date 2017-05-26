@@ -8,8 +8,6 @@ import android.net.NetworkInfo;
 
 
 /**
- * Created by Blaize Stewart on 1/13/2017.
- *
  * This class receives a Broadcast Notification from Android when the network state changes.
  * If the Messaging Service isn't started, then the service is started.
  */

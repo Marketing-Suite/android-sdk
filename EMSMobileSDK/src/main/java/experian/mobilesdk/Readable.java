@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Created by Blaize Stewart on 1/10/2017.
- *
  * Creates a simple interfaces for reading data from persistent storage.
  */
 

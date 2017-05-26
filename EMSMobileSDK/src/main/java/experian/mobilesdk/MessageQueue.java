@@ -10,8 +10,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Created by Blaize Stewart on 1/10/2017.
- *
  * This class handles the message queue to help improve the success of message deliveries.
  *
  * The rules are:
@@ -21,9 +19,9 @@ import java.util.TimerTask;
  * Messages are persisted to device storage.
  * The processing of the Queue is done every five seconds o a timer.
  */
-
 class MessageQueue implements Receivable {
 
+    // TODO: put back
     static final int FIVESECONDS = 5000;
     static final int THIRTYSECONDS = 30000;
     static final int FIVEMINUTES = 300000;
@@ -152,7 +150,7 @@ class MessageQueue implements Receivable {
 
     //Messages are handled by way of the HTTP Sender. This the callback method for HTTP messages.
     @Override
-    public void onReceive(EMSMessage msg, int responseCode, JSONObject responseData) {
+    public void onReceive(EMSMessage msg, int responseCode, String responseData) {
 
         switch (responseCode) {
             case 200: //Message OK -- Sent

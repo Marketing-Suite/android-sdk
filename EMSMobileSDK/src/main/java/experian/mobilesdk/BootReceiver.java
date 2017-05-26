@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 
 /**
- * Created by Blaize Stewart on 1/17/2017.
- *
  * This class receives a Broadcast Notification from Android when the device boots.
  * Subsequently, it starts the messaging service in the background which handles the Message Queue
  */

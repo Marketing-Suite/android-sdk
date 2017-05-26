@@ -22,10 +22,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Created by Blaize Stewart on 1/13/2017.
- *
  * This class is a wrapper  around Volley to handle the HTTP calls for the Queue.
- *
  * https://developer.android.com/training/volley/index.html
  */
 
@@ -76,66 +73,45 @@ class VolleySender implements Sendable {
 
 
 
-        final ServerStatusRequestObject request = new ServerStatusRequestObject(m, msg.getUrl(),
+        final ServerStatusRequestObject request = new ServerStatusRequestObject(m, msg.getUrl(), msg.getContentType(),
                 new Response.Listener<NetworkResponse>() {
                     @Override
                     public void onResponse(NetworkResponse response) { //The success method if the messages was successful
 
-                        String jsonData = "";
-
+                        String data = "";
 
                         //Attempts to load the message response as as string.
                         try {
-                            jsonData = new String(response.data, "UTF-8");
+                            data = new String(response.data, "UTF-8");
                         } catch (UnsupportedEncodingException e) {
                             //e.printStackTrace();
                         }
 
-                        JSONObject jObj = null;
-
-                        //Attempts to parse the response body as a JSON object.
-                        try {
-                            jObj = new JSONObject(jsonData);
-                        } catch (JSONException e) {
-                            //e.printStackTrace();
-                        }
-
                         //Notifies the observer a message was received.
                         if (observer != null){
-                            observer.onReceive(msg, response.statusCode, jObj);
+                            observer.onReceive(msg, response.statusCode, data);
                         }
 
-
                     }
-
-
-
-
                 },
 
                 new Response.ErrorListener() {
+
                     @Override
                     public void onErrorResponse(VolleyError error) { //The error handler
-                        NetworkResponse networkResponse = error.networkResponse;
-                        JSONObject jObj = new JSONObject();
 
-                        //Attempts to parse the error message from the response
-                        try {
-                            jObj.put("errorMessage", error.getMessage());
-                        } catch (JSONException e) {
-                            //e.printStackTrace();
-                        }
+                        NetworkResponse networkResponse = error.networkResponse;
 
                         //Notifies the observer a message was received.
                         if (observer != null){
                             int code = 0;
-                            if (networkResponse != null) code = networkResponse.statusCode;
-                            observer.onReceive(msg, code, jObj);
+                            if (networkResponse != null)
+                                code = networkResponse.statusCode;
+
+                            observer.onReceive(msg, code, "Error");
                         }
                     }
         }, msg.getBody());
-
-
 
         queue.add(request);
 

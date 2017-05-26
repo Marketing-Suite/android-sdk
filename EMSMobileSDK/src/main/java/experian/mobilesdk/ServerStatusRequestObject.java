@@ -5,12 +5,8 @@ import com.android.volley.*;
 import com.android.volley.toolbox.HttpHeaderParser;
 
 /**
- * Created by Blaize Stewart on 1/13/2017.
- *
  * This class gives more access to the underlying message object from Volley so the HTTP status and response body are accesible.
-
  */
-
 class ServerStatusRequestObject extends Request {
 
 
@@ -21,12 +17,13 @@ class ServerStatusRequestObject extends Request {
     //The constructor takes the basic properties from Volley and creates a request object.
     public ServerStatusRequestObject(int method,
                                      String url,
+                                     String contentType,
                                      Response.Listener listener,
                                      Response.ErrorListener errorListener, Object body) {
 
         super(method, url, errorListener);
         mListener = listener;
-        mContentType = "application/json";
+        mContentType = contentType;
         mBody = body.toString();
 
 

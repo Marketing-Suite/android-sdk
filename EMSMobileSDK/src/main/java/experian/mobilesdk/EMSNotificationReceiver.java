@@ -7,8 +7,6 @@ import android.content.Intent;
 import org.json.JSONObject;
 
 /**
- * Created by Blaize Stewart on 2/6/2017.
- *
  * This class receives Broadcast Notifications from Android whenever a Notification is tapped.
  * The Notification itself is created bby the EMSMobileSDK whenever a Push Notification is received.
  */
@@ -21,7 +19,7 @@ public class EMSNotificationReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(EMSNotificationReceiver.EMS_NOTIFICATION_INTENT)) {
 
-            EMSMobileSDK.Default().notifyPushNotificationTap(intent);
+            EMSMobileSDK.Default().notifyPushNotificationTap(context, intent);
 
         }
     }
