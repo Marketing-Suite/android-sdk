@@ -49,8 +49,6 @@ public class EMSMobileSDK {
     private String EndPoint;
     private String APIPostEndPoint;
     private String PRID;
-    private Readable dataReader;
-    private Persistable dataWriter;
     private boolean startNotified = false;
     private IEMSCallback PushCallback;
 
@@ -145,9 +143,6 @@ public class EMSMobileSDK {
                 this.APIPostEndPoint = "https://ats.eccmp.com/ats";
                 break;
         }
-
-        this.dataReader = new AndroidIO();
-        this.dataWriter = new AndroidIO();
     }
 
     /**
@@ -284,16 +279,18 @@ public class EMSMobileSDK {
     //The Device token is set.
     // It checks to see if the token has changed or if the PRID is not set.
     // If either condition is true, the SDK attempts to register a PRID with the token.
-    void setDeviceToken(String DeviceToken){
+    void setDeviceToken(Context ctx, String DeviceToken){
 
         this.Token = DeviceToken;
 
         if (DeviceToken != null){
 
             String oldToken = "";
+            Readable dataReader = new AndroidIO();
+            Persistable dataWriter = new AndroidIO();
 
             try {
-                oldToken = dataReader.readToken(this.context);
+                oldToken = dataReader.readToken(ctx);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -301,7 +298,7 @@ public class EMSMobileSDK {
             if (!DeviceToken.equals(oldToken) || this.PRID == null || this.PRID.equals("")){
 
                 try {
-                    this.dataWriter.persistToken(DeviceToken, this.context);
+                    dataWriter.persistToken(DeviceToken, ctx);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -380,7 +377,7 @@ public class EMSMobileSDK {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mBoundService = ((EMSService.EMSBinder) service).getService();
             String token = FirebaseInstanceId.getInstance().getToken();
-            EMSMobileSDK.Default().setDeviceToken(token);
+            EMSMobileSDK.Default().setDeviceToken(mBoundService.getApplicationContext(),  token);
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -415,7 +412,8 @@ public class EMSMobileSDK {
 
     private void setPRID(String PRID) {
         try {
-            this.dataWriter.persistPRID(PRID, this.context);
+            Persistable dataWriter = new AndroidIO();
+            dataWriter.persistPRID(PRID, this.context);
         } catch (IOException e) {
             e.printStackTrace();
         }
