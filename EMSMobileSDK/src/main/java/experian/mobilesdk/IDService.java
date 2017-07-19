@@ -16,14 +16,9 @@ public class IDService extends FirebaseInstanceIdService {
 
     @Override
     public void onTokenRefresh() {
-
         FirebaseInstanceIdService fid = new FirebaseInstanceIdService();
-
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "Refreshed token: " + refreshedToken);
-
-        EMSMobileSDK.Default().setDeviceToken(getApplicationContext(), refreshedToken);
+        EMSMobileSDK.Default().setToken(getApplicationContext(), refreshedToken);
     }
-
-
 }

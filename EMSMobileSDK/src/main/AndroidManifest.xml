@@ -5,9 +5,6 @@
 
 
         <uses-permission android:name="android.permission.INTERNET" />
-        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-        <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-
 
         <service
             android:name=".MessagingService">
@@ -24,30 +21,12 @@
             </intent-filter>
         </service>
 
-
-        <service
-            android:name=".EMSService">
-        </service>
-
-
-        <receiver android:name=".BootReceiver">
+        <receiver android:name="NotificationReceiver" android:enabled="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="com.experian.mobilesdk.EMS_SHOW_NOTIFICATION" />
+                <action android:name="com.experian.mobilesdk.EMS_OPEN_NOTIFICATION" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-
-        <receiver  android:name=".ConnectionReceiver" android:exported="false" >
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name=".EMSNotificationReceiver" android:enabled="true">
-            <intent-filter>
-                <action android:name="experian.mobilesdk.EMSNotificationReceiver.EMS_NOTIFICATION_INTENT"></action>
-            </intent-filter>
-        </receiver>
-
     </application>
-
 </manifest>
