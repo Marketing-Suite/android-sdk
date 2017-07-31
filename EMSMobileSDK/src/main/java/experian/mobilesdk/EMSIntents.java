@@ -8,7 +8,7 @@ package experian.mobilesdk;
  * The list of overridable intents
  */
 public class EMSIntents {
-    public static final String EMS_SHOW_NOTIFICATION = "com.experian.mobilesdk.EMS_SHOW_NOTIFICATION";
-    public static final String EMS_OPEN_NOTIFICATION = "com.experian.mobilesdk.EMS_OPEN_NOTIFICATION";
-    public static final String EMS_PUSH_RECEIVED = "com.experian.mobilesdk.EMS_PUSH_RECEIVED";
+    public static final String EMS_SHOW_NOTIFICATION = ".EMS_SHOW_NOTIFICATION";
+    public static final String EMS_OPEN_NOTIFICATION = ".EMS_OPEN_NOTIFICATION";
+    public static final String EMS_PUSH_RECEIVED = ".EMS_PUSH_RECEIVED";
 }

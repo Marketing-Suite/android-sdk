@@ -47,7 +47,7 @@ This Application ID is needed to register a new app with Firebase.
 
 A Firebase project is a collection of apps that can use a variety of Google API's including push notifications. If you do not already have a Firebase project you intend to use with push notifications, you'll need to create one. Othewise, select the project and proceed to **Register an App on Firebase**.
 
-1. Go to https://consoled.firebase.google.com and logon to Firebase witha Google account
+1. Go to https://consoled.firebase.google.com and logon to Firebase with a Google account
 
 2. Select **Create a New Project**.
 
@@ -316,6 +316,20 @@ The apiPost method is used to post data from the app to a form hosted in CCMP.
 ## Overriding Default Push Behavior
 
 The EMS Mobile SDK is designed to be able to manage inbound push notifications on behalf of the app with minimal intervention.  If however the application developer wants to modify the default behavior, the following options are available.
+
+### Default Push Behavior
+
+By default, the EMS Mobile SDK will manage the showing of notifications and registering the opens from the push notification by simply adding the following to your Android manifest file.
+
+```xml
+<receiver android:name="experian.mobilesdk.NotificationReceiver" android:enabled="true">
+    <intent-filter>
+        <action android:name="${packageName}.EMS_SHOW_NOTIFICATION" />
+        <action android:name="${packageName}.EMS_OPEN_NOTIFICATION" />
+        <category android:name="android.intent.category.DEFAULT" />
+    </intent-filter>
+</receiver>
+```
 
 ### Override Refreshed Token from Google Firebase
 

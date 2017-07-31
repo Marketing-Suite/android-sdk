@@ -34,7 +34,7 @@ public class NotificationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "Received Notification");
-        if (intent.getAction().equals(EMSIntents.EMS_SHOW_NOTIFICATION)) {
+        if (intent.getAction().equals(context.getPackageName() + EMSIntents.EMS_SHOW_NOTIFICATION)) {
             Object data = intent.getExtras().get("data");
             if (data != null) {
                 RemoteMessage message = (RemoteMessage) data;
@@ -42,7 +42,7 @@ public class NotificationReceiver extends BroadcastReceiver {
                 displayNotification(context, jData);
             }
         }
-        else if (intent.getAction().equals(EMSIntents.EMS_OPEN_NOTIFICATION)) {
+        else if (intent.getAction().equals(context.getPackageName() + EMSIntents.EMS_OPEN_NOTIFICATION)) {
             EMSMobileSDK.Default().pushNotificationRegisterOpen(context, intent);
             // launch app
             try {
@@ -84,7 +84,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
 
 
-        Intent resultIntent =  new Intent(EMSIntents.EMS_OPEN_NOTIFICATION);
+        Intent resultIntent =  new Intent(ctx.getPackageName() + EMSIntents.EMS_OPEN_NOTIFICATION);
         try {
             resultIntent.putExtra("ems_open",data.getString("ems_open"));
         } catch (JSONException e) {
