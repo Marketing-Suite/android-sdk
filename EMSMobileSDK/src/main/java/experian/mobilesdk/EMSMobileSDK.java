@@ -3,6 +3,7 @@ package experian.mobilesdk;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.util.Log;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -267,23 +268,26 @@ public class EMSMobileSDK {
      * @param intent
      */
     public void pushNotificationRegisterOpen(Context ctx, Intent intent) {
-        //If the ems_open property is set, CCMP is notified that the application was opened by way of a Notification Tap.
-        String ems_open = intent.getExtras().getString("ems_open");
-        if (ems_open != null) {
-            Log.d(TAG, "App Open URL: " + ems_open);
-            EMSStringRequest req = new EMSStringRequest(Request.Method.GET, ems_open, new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    Log.d(TAG, "App Open Sent");
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d(TAG, "Error calling ems_open url: " + error.getMessage());
-                }
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            //If the ems_open property is set, CCMP is notified that the application was opened by way of a Notification Tap.
+            String ems_open = extras.getString("ems_open");
+            if (ems_open != null) {
+                Log.d(TAG, "App Open URL: " + ems_open);
+                EMSStringRequest req = new EMSStringRequest(Request.Method.GET, ems_open, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, "App Open Sent");
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d(TAG, "Error calling ems_open url: " + error.getMessage());
+                    }
 
-            });
-            VolleySender.getInstance(ctx).addToRequestQueue(req);
+                });
+                VolleySender.getInstance(ctx).addToRequestQueue(req);
+            }
         }
     }
 
