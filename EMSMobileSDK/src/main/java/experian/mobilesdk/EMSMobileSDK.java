@@ -248,7 +248,7 @@ public class EMSMobileSDK {
         setAppID(appID);
         setCustomerID(customerID);
         setRegion(region);
-        setToken(ctx, FirebaseInstanceId.getInstance().getToken());
+      //  setToken(ctx, FirebaseInstanceId.getInstance().getToken());
     }
 
     /**

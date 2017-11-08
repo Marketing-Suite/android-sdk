@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/EMSMobileSDK/EMSMobileSDK.iml" filepath="$PROJECT_DIR$/EMSMobileSDK/EMSMobileSDK.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android-sdk.iml" filepath="$PROJECT_DIR$/android-sdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/EMSMobileSDK.iml" filepath="$PROJECT_DIR$/EMSMobileSDK.iml" />
     </modules>
   </component>
 </project>
