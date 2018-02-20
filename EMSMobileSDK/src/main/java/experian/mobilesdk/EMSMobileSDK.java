@@ -33,6 +33,8 @@ public class EMSMobileSDK {
     private static final String CDMS_REGION = "CDMS_REGION";
     private static final String TAG = "EMS:EMSMobileSDK";
 
+    private static final String SHARED_PREFERENCES_FILE = "EMSMobileSDK";
+
     private Context context;
     private String appID;
     private int customerID;
@@ -53,7 +55,7 @@ public class EMSMobileSDK {
      */
     public String getPRID() {
         if (this.prid == null) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+            SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
             this.prid = sharedPref.getString(CDMS_PRID, null);
             Log.d(TAG, "Retrieved prid from storage: " + this.prid);
         }
@@ -61,7 +63,7 @@ public class EMSMobileSDK {
     }
 
     private void setPRID(String prid) {
-        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(CDMS_PRID, prid);
         editor.apply();
@@ -74,7 +76,7 @@ public class EMSMobileSDK {
      */
     public String getToken() {
         if (this.token == null) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+            SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
             this.token = sharedPref.getString(CDMS_TOKEN, null);
             Log.d(TAG, "Retrieved token from storage: " + this.token);
         }
@@ -91,9 +93,13 @@ public class EMSMobileSDK {
      * @param context
      * @param token
      */
-    public void setToken(Context context, String token) {
-        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+    public void setToken(Context context, final String token) {
+        this.context = context;
+        this.token = token;
+
+        final SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
         String storedToken = sharedPref.getString(CDMS_TOKEN, "");
+
         if (!storedToken.equals(token)) {
             //Register this token and get PRID
             int method = Request.Method.POST;
@@ -115,9 +121,11 @@ public class EMSMobileSDK {
                     try {
                         String newPRID = response.getString("Push_Registration_Id");
                         setPRID(newPRID);
+                        setCDMS_TOKEN(token);
                         if (pridCallback != null) {
                             pridCallback.onPRIDReceived(newPRID);
                         }
+
                     } catch (JSONException ex) {
                         Log.d(TAG, "Unable to find prid in response from registration: " + response.toString());
                         Log.d(TAG, "JSONException: " + ex.getMessage());
@@ -136,6 +144,11 @@ public class EMSMobileSDK {
                 pridCallback.onPRIDReceived(getPRID());
             }
         }
+    }
+
+    private void setCDMS_TOKEN(String token) {
+
+        SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(CDMS_TOKEN, token);
         editor.apply();
@@ -149,7 +162,7 @@ public class EMSMobileSDK {
      */
     public String getAppID() {
         if (this.appID == null) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+            SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
             this.appID = sharedPref.getString(CDMS_APPID, null);
             Log.d(TAG, "Retrieved appID from storage: " + this.appID);
         }
@@ -157,7 +170,7 @@ public class EMSMobileSDK {
     }
 
     private void setAppID(String appID) {
-        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(CDMS_APPID, appID);
         editor.apply();
@@ -170,7 +183,7 @@ public class EMSMobileSDK {
      */
     public int getCustomerID() {
         if (this.customerID == 0) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+            SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
             this.customerID = sharedPref.getInt(CDMS_CUSTID, 0);
             Log.d(TAG, "Retrieved customerID from storage: " + this.customerID);
         }
@@ -178,7 +191,7 @@ public class EMSMobileSDK {
     }
 
     private void setCustomerID(int customerID) {
-        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(CDMS_CUSTID, customerID);
         editor.apply();
@@ -191,14 +204,14 @@ public class EMSMobileSDK {
      */
     public Region getRegion() {
         if (this.region == null) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+            SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
             this.region = Region.values()[sharedPref.getInt(CDMS_REGION, 0)];
         }
         return this.region;
     }
 
     private void setRegion(Region region) {
-        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(CDMS_REGION, region.getValue());
         editor.apply();
@@ -248,7 +261,7 @@ public class EMSMobileSDK {
         setAppID(appID);
         setCustomerID(customerID);
         setRegion(region);
-      //  setToken(ctx, FirebaseInstanceId.getInstance().getToken());
+        setToken(ctx, FirebaseInstanceId.getInstance().getToken());
     }
 
     /**
