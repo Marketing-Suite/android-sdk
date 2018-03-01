@@ -4,12 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +26,7 @@ public class EMSMobileSDK {
     private static EMSMobileSDK instance = new EMSMobileSDK();
 
     //Static keys for SharedPreferences
+    private static final String SHARED_PREFERENCES_NAME = "EMSMobileSDK";
     private static final String CDMS_PRID = "CDMS_PRID";
     private static final String CDMS_CUSTID = "CDMS_CUSTID";
     private static final String CDMS_APPID = "CDMS_APPID";
@@ -48,48 +49,197 @@ public class EMSMobileSDK {
     }
 
     /**
+     *
+     * @return returns the private shared preferences for the SDK
+     */
+    private SharedPreferences GetPrivateSharedPreferences()
+    {
+        return context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+    }
+
+    /**
+     *
+     * @return returns the registration endpoint consisting of
+     * customer id and application id
+     */
+    private String RegistrationEndpoint()
+    {
+        return getRegion().getEndpoint() + "/xts/registration/cust/" + getCustomerID() + "/application/" + getAppID() + "/token";
+    }
+
+    /**
      * Returns the prid created by CCMP to identify this device
      * @return returns the prid created by CCMP to identify this device
      */
     public String getPRID() {
-        if (this.prid == null) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
-            this.prid = sharedPref.getString(CDMS_PRID, null);
-            Log.d(TAG, "Retrieved prid from storage: " + this.prid);
-        }
-        return this.prid;
+        return GetPrivateSharedPreferences().getString(CDMS_PRID, null);
     }
 
-    private void setPRID(String prid) {
+    /**
+     * Set the PRID locally, and if a callback is set fire it.
+     * If the PRID is unchanged, this is considered a no-op,
+     * and the callback will not be fired.
+     *
+     * @param prid new PRID to set in object instance
+     *
+     */
+    private void setPRIDAndFirePRIDCallback(String prid) {
+        String originalPRID = getPRID();
+        // no-op
+        if ( originalPRID != null && originalPRID.equals(prid)) {
+            return;
+        }
+
         SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(CDMS_PRID, prid);
         editor.apply();
         this.prid = prid;
+        // Don't call the callback in the case that we're null'ing out the PRID
+        if (prid != null && pridCallback != null) {
+            pridCallback.onPRIDReceived(prid);
+        }
     }
 
     /**
      * Returns the Device token assigned by Google Services
      * @return returns the device token assigned by Google Services
      */
-    public String getToken() {
-        if (this.token == null) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
-            this.token = sharedPref.getString(CDMS_TOKEN, null);
-            Log.d(TAG, "Retrieved token from storage: " + this.token);
-        }
-        return this.token;
-    }
-
-    private void setToken(String token) {
-        this.setToken(this.context, token);
+    public String getToken()
+    {
+        return GetPrivateSharedPreferences().getString(CDMS_TOKEN, "");
     }
 
     /**
      * This method is called to set the Device token on Init or Refresh
      *
+     * @param token The device token received from Google's Firebase
+     *
+     */
+    public void setToken(String token) {
+        String originalToken = getToken();
+        if ( originalToken.equals(token) )
+        {
+            return;
+        }
+        // new or updated
+        SaveRemoteTokenAndSetPRID(getPRID() == null);
+
+        // set the token locally
+        SharedPreferences.Editor editor = GetPrivateSharedPreferences().edit();
+        editor.putString(CDMS_TOKEN, token);
+        editor.apply();
+        this.token = token;
+
+    }
+
+    /**
+     * Store the device token in Marketing Suite, and depending on whether a PRID
+     * has been assigned for this token, save the PRID locally
+     *
+     * @param pridIsAssigned boolean indicating whether a PRID has been assigned
+     *                       via Marketing Suite for the device token being saved
+     */
+    private void SaveRemoteTokenAndSetPRID(boolean pridIsAssigned)
+    {
+        VolleySender.getInstance(context).addToRequestQueue(
+            new EMSJSONObjectRequest(
+                pridIsAssigned ? Request.Method.PUT : Request.Method.POST,
+                RegistrationEndpoint(),
+                TokenSubmissionJsonBody(),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        setPRIDFromRemoteResponse(response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.i(TAG, "Error submitting token registration request: " + error.getMessage());
+                    }
+                }
+            )
+        );
+    }
+
+    /**
+     * Mark the token remotely as having been deactivated, indicating push
+     * notifications are opted-out for this device.
+     *
+     */
+    private void DeactivateRemoteToken()
+    {
+        VolleySender.getInstance(context).addToRequestQueue(
+            new EMSStringRequest(
+                    Request.Method.DELETE,
+                    RegistrationEndpoint(),
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.i(TAG, String.format("Received response upon deactivating token: %s", response.toString()) );
+                            setPRIDAndFirePRIDCallback(null);
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.i(TAG, String.format("Error submitting registration request.  Error message: %s. Error toString(): %s", error.getMessage(), error.toString() ));
+                        }
+                    }) {
+                @Override
+                public byte[] getBody() { return TokenSubmissionJsonBody().toString().getBytes(); }
+
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+            }
+        );
+    }
+
+    /**
+     * Create the JSON body containing the device token for submission
+     * to Marketing Suite
+     *
+     * @return JSONObject containing the device token, with 'DeviceToken' as the
+     * object key.
+     */
+    private JSONObject TokenSubmissionJsonBody()
+    {
+        JSONObject body = new JSONObject();
+        try {
+            body.put("DeviceToken", getToken());
+        } catch (JSONException ex) {
+            Log.d(TAG, "Unable to set device token in body");
+        }
+        return body;
+    }
+
+
+    /**
+     *
+     * After remote submission of a token, the response is returned as JSON,
+     * and parsed here.  If the PRID is new, call {@link #setPRIDAndFirePRIDCallback(String)}
+     * *
+     * @param response JSON response containing PRID
+     */
+    private void setPRIDFromRemoteResponse(JSONObject response)
+    {
+        try {
+            setPRIDAndFirePRIDCallback(response.getString("Push_Registration_Id"));
+        } catch (JSONException ex) {
+            Log.w(TAG, String.format("Error parsing response for PRID: %s, exception: %s", response.toString(), ex.getMessage()));
+        }
+    }
+
+    /**
+     * This method is called to set the Device token on Init or Refresh when
+     * application context is required
+     *
      * @param context
      * @param token
+     *
      */
     public void setToken(Context context, String token) {
         SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
@@ -114,7 +264,7 @@ public class EMSMobileSDK {
                 public void onResponse(JSONObject response) {
                     try {
                         String newPRID = response.getString("Push_Registration_Id");
-                        setPRID(newPRID);
+                        setPRIDAndFirePRIDCallback(newPRID);
                         if (pridCallback != null) {
                             pridCallback.onPRIDReceived(newPRID);
                         }
@@ -148,17 +298,11 @@ public class EMSMobileSDK {
      * @return Returns the CCMP Application ID used to initialize the EMS SDK
      */
     public String getAppID() {
-        if (this.appID == null) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
-            this.appID = sharedPref.getString(CDMS_APPID, null);
-            Log.d(TAG, "Retrieved appID from storage: " + this.appID);
-        }
-        return this.appID;
+        return GetPrivateSharedPreferences().getString(CDMS_APPID, null);
     }
 
     private void setAppID(String appID) {
-        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
+        SharedPreferences.Editor editor = GetPrivateSharedPreferences().edit();
         editor.putString(CDMS_APPID, appID);
         editor.apply();
         this.appID = appID;
@@ -168,17 +312,10 @@ public class EMSMobileSDK {
      * Returns the CCMP Customer ID used to initialize the EMS SDK
      * @return Returns the CCMP Customer ID used to initialize the EMS SDK
      */
-    public int getCustomerID() {
-        if (this.customerID == 0) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
-            this.customerID = sharedPref.getInt(CDMS_CUSTID, 0);
-            Log.d(TAG, "Retrieved customerID from storage: " + this.customerID);
-        }
-        return this.customerID;
-    }
+    public int getCustomerID() { return GetPrivateSharedPreferences().getInt(CDMS_CUSTID, 0); }
 
     private void setCustomerID(int customerID) {
-        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = GetPrivateSharedPreferences();
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(CDMS_CUSTID, customerID);
         editor.apply();
@@ -189,16 +326,10 @@ public class EMSMobileSDK {
      * Returns the CCMP region used to initialize the EMS SDK
      * @return Returns the CCMP region used to initialize the EMS SDK
      */
-    public Region getRegion() {
-        if (this.region == null) {
-            SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
-            this.region = Region.values()[sharedPref.getInt(CDMS_REGION, 0)];
-        }
-        return this.region;
-    }
+    public Region getRegion() { return Region.values()[GetPrivateSharedPreferences().getInt(CDMS_REGION, 0)]; }
 
     private void setRegion(Region region) {
-        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = GetPrivateSharedPreferences();
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(CDMS_REGION, region.getValue());
         editor.apply();
@@ -249,6 +380,50 @@ public class EMSMobileSDK {
         setCustomerID(customerID);
         setRegion(region);
     }
+
+    /**
+     * This method should be called whenever the application is brought back
+     * into the foreground.  Typically via the onResume() method within
+     * MainActivity.
+     */
+    public void NotificationOptInStatusCheck()
+    {
+        /**
+         * Matrix of possibilities:
+         * Notifications Disabled + PRID Null = no-op
+         * Notifications Enabled + PRID Null = register
+         * Notifications Disabled + PRID Not Null = unregister
+         * Notifications Disabled + PRID NULL = no-op
+         * Notifications Enabled + PRID Not Null = no-op
+         */
+
+        boolean pridIsAssigned = getPRID() != null;
+        boolean notificationsEnabled = NotificationsEnabled();
+        // Notifications are enabled at the OS-level and this instance doesn't
+        // yet have a PRID assigned remotely - opt in.
+        if (notificationsEnabled && pridIsAssigned == false)
+        {
+            Log.i(TAG, "Opting device into notifications via Marketing Suite");
+            SaveRemoteTokenAndSetPRID(pridIsAssigned);
+        }
+        // Notifications are disabled at the OS-level, but we have a PRID
+        // assigned remotely - opt out.
+        else if (notificationsEnabled == false && pridIsAssigned == true)
+        {
+            Log.i(TAG, "Opting device out of notifications via Marketing Suite");
+            DeactivateRemoteToken();
+        }
+    }
+
+    /**
+     * Indicates whether Notifications are enabled for the instance
+     *
+     */
+    public boolean NotificationsEnabled()
+    {
+        return NotificationManagerCompat.from(this.context).areNotificationsEnabled();
+    }
+
 
     /**
      * Registers a callbck to be called for any new prid received by CCMP

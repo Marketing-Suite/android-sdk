@@ -1,10 +1,15 @@
 package experian.mobilesdk;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.http.AndroidHttpClient;
+
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.android.volley.toolbox.HttpStack;
 
 /**
  * This class is a wrapper  around Volley to handle the HTTP calls for the Queue.
@@ -30,7 +35,15 @@ class VolleySender {
 
     public RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(mCtx.getApplicationContext());
+
+            String userAgent = "volley/0";
+            try {
+                String packageName = mCtx.getPackageName();
+                PackageInfo info = mCtx.getPackageManager().getPackageInfo(packageName, 0);
+                userAgent = packageName + "/" + info.versionCode;
+            } catch (PackageManager.NameNotFoundException e) {}
+            HttpStack httpStack = new EMSHttpClientStack(AndroidHttpClient.newInstance(userAgent));
+            mRequestQueue = Volley.newRequestQueue(mCtx, httpStack);
         }
         return mRequestQueue;
     }

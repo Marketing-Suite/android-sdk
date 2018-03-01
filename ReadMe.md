@@ -273,7 +273,7 @@ In order to add an app to CCMP, you'll need to have the package name on Google.
 
 #### **init**(Context **ctx**, Intent **appIntent**, String **AppID**, int **CustomerID**)
 
-The init method initializes the SDK from the application so that Push Notifications can be received from CCMP. The overloaded method below allows for the region to be specified. If no region is specified, the SDK defaults to North America.
+The `init` method initializes the SDK from the application so that Push Notifications can be received from CCMP. The overloaded method below allows for the region to be specified. If no region is specified, the SDK defaults to North America.
 
 * **ctx** -- The Application Context for the app using the SDK.
 * **appIntent** -- The Application Intent that was used to start the app using the SDK.
@@ -285,7 +285,7 @@ The init method initializes the SDK from the application so that Push Notificati
 
 #### **init**(Context **ctx**, Intent **appIntent**, String **AppID**, int **CustomerID**, Region **region**)
 
-The **init** method initializes the SDK from the application so that Push Notifications can be received from CCMP.
+The `init` method initializes the SDK from the application so that Push Notifications can be received from CCMP.
 
 * **ctx** -- The Application Context for the app using the SDK.
 * **appIntent** -- The Application Intent that was used to start the app using the SDK.
@@ -297,7 +297,7 @@ The **init** method initializes the SDK from the application so that Push Notifi
 
 #### **registerPRIDCallback**(IEMSPRIDCallback **pridCallback**)
 
-The RegisterPRIDCallback method registers a callback in the application which is executed when the PRID has been successfully retrieved from CCMP.
+The `RegisterPRIDCallback` method registers a callback in the application which is executed when the PRID has been successfully retrieved from CCMP.
 
 * **pridCallback** -- a class that implements the SDK's IEMSPRIDCallback interface. The callback expects a method called onPRIDReceived(String prid) that receives a string containing the PRID returned by CCMP for this application/device instance. 
 
@@ -305,11 +305,19 @@ The RegisterPRIDCallback method registers a callback in the application which is
 
 #### **apiPost**(int **formId**, Map<String, String> **data**, IEMSAPIPostCallback **callback**)
 
-The apiPost method is used to post data from the app to a form hosted in CCMP.  
+The `apiPost` method is used to post data from the app to a form hosted in CCMP.
 
 - **formId** -- the form ID from CCMP for the form you want to post data to
 - **data** -- A key/value structure of the fields and values you want to post to the form
 - **callback** -- A class that implements the IEMSPostCallback::onDataSent(VolleyError error) method.  This method is called when the API Post is complete.  If the error parameter passed to the method is null, the API Post was successful, otherwise the error will have the data about what exactly went wrong.
+
+---
+
+#### **NotificationOptInStatusCheck()**
+
+The `NotficationOptInStatusCheck()` method is used to confirm Marketing Suite opt-in status for GCM/Firebase notifications to the application.
+
+A call to this method should be placed in the `OnResume()` method of the _MainActivity_ class. This will ensure its being called in the case that the user has either turned on or turned off notifications for the application via the Android settings.  This will mark the PRID with a status indicating opted-in or opted-out, depending on the setting.  Messages from Marketing Suite will only be sent to the device when it is opted-in via the Android settings.
 
 ------
 
