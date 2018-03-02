@@ -34,7 +34,7 @@ public enum Region {
             case EMEA:
                 return "https://xts.ccmp.eu";
             case JAPAN:
-                return "https://xts.ccmp.experian.co.jp";
+                return "https://xts.marketingsuite.jp";
             case NORTH_AMERICA:
             default:
                 return "https://xts.eccmp.com";
@@ -52,7 +52,7 @@ public enum Region {
             case EMEA:
                 return "https://ats.ccmp.eu/ats";
             case JAPAN:
-                return "https://ats.ccmp.experian.co.jp/ats";
+                return "https://ats.marketingsuite.jp/ats";
             case NORTH_AMERICA:
             default:
                 return "https://ats.eccmp.com/ats";
