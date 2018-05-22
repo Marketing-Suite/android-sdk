@@ -13,6 +13,8 @@ import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -379,6 +381,21 @@ public class EMSMobileSDK {
         setAppID(appID);
         setCustomerID(customerID);
         setRegion(region);
+    }
+
+     /**
+     * Initialization of the SDK from calling context.  This method assumes previous setting/saving of
+     * appID, customerID, and region parameters via a call to the longer-form init()
+     *
+     * @param ctx        the application context
+     */
+     public void initFromContext(Context ctx) throws Exception {
+
+        String errorSuffix = " has not been set via init().";
+        if ( ! GetPrivateSharedPreferences(ctx).contains(CDMS_APPID) ) { throw new InvalidParameterException(TAG + "Application Id" + errorSuffix); }
+        if ( ! GetPrivateSharedPreferences(ctx).contains(CDMS_CUSTID) ) { throw new InvalidParameterException(TAG + "Cust Id" + errorSuffix); }
+        if ( ! GetPrivateSharedPreferences(ctx).contains(CDMS_REGION) ) { throw new InvalidParameterException(TAG + "Region" + errorSuffix); }
+        this.context = ctx;
     }
 
     /**
