@@ -298,7 +298,7 @@ public class EMSMobileSDK {
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.d(TAG, "Unable to request prid: " + error.getMessage());
+                    Log.d(TAG, "Unable to request prid: " + error.toString());
                 }
             });
             VolleySender.getInstance(context).addToRequestQueue(req);
