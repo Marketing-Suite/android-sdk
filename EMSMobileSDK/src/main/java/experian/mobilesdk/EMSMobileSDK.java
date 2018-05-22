@@ -51,12 +51,21 @@ public class EMSMobileSDK {
     }
 
     /**
+     * @param callingContext the originating android.content.Context object which made this call.
+     * @return returns the private shared preferences for the SDK
+     */
+    private SharedPreferences GetPrivateSharedPreferences(Context callingContext)
+    {
+        return callingContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+    }
+
+    /**
      *
      * @return returns the private shared preferences for the SDK
      */
     private SharedPreferences GetPrivateSharedPreferences()
     {
-        return context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return GetPrivateSharedPreferences(this.context);
     }
 
     /**
@@ -71,10 +80,19 @@ public class EMSMobileSDK {
 
     /**
      * Returns the prid created by CCMP to identify this device
+     * @param callingContext the originating android.content.Context object which made this call.
+     * @return returns the prid created by CCMP to identify this device
+     */
+    public String getPRID(Context callingContext) {
+        return GetPrivateSharedPreferences(callingContext).getString(CDMS_PRID, null);
+    }
+
+    /**
+     * Returns the prid created by CCMP to identify this device
      * @return returns the prid created by CCMP to identify this device
      */
     public String getPRID() {
-        return GetPrivateSharedPreferences().getString(CDMS_PRID, null);
+        return getPRID(this.context);
     }
 
     /**
@@ -295,12 +313,21 @@ public class EMSMobileSDK {
         this.token = token;
     }
 
+     /**
+     * Returns the CCMP Application ID used to initialize the EMS SDK
+     * @param callingContext the originating android.content.Context object which made this call.
+     * @return Returns the CCMP Application ID used to initialize the EMS SDK
+     */
+    public String getAppID(Context callingContext) {
+        return GetPrivateSharedPreferences(callingContext).getString(CDMS_APPID, null);
+    }
+
     /**
      * Returns the CCMP Application ID used to initialize the EMS SDK
      * @return Returns the CCMP Application ID used to initialize the EMS SDK
      */
     public String getAppID() {
-        return GetPrivateSharedPreferences().getString(CDMS_APPID, null);
+        return getAppID(this.context);
     }
 
     private void setAppID(String appID) {
@@ -312,9 +339,16 @@ public class EMSMobileSDK {
 
     /**
      * Returns the CCMP Customer ID used to initialize the EMS SDK
+     * @param callingContext the originating android.content.Context object which made this call.
      * @return Returns the CCMP Customer ID used to initialize the EMS SDK
      */
-    public int getCustomerID() { return GetPrivateSharedPreferences().getInt(CDMS_CUSTID, 0); }
+    public int getCustomerID(Context callingContext) { return GetPrivateSharedPreferences(callingContext).getInt(CDMS_CUSTID, 0); }
+
+    /**
+     * Returns the CCMP Customer ID used to initialize the EMS SDK
+     * @return Returns the CCMP Customer ID used to initialize the EMS SDK
+     */
+    public int getCustomerID() { return getCustomerID(this.context); }
 
     private void setCustomerID(int customerID) {
         SharedPreferences sharedPref = GetPrivateSharedPreferences();
@@ -326,9 +360,16 @@ public class EMSMobileSDK {
 
     /**
      * Returns the CCMP region used to initialize the EMS SDK
+     * @param callingContext the originating android.content.Context object which made this call.
      * @return Returns the CCMP region used to initialize the EMS SDK
      */
-    public Region getRegion() { return Region.values()[GetPrivateSharedPreferences().getInt(CDMS_REGION, 0)]; }
+    public Region getRegion(Context callingContext) { return Region.values()[GetPrivateSharedPreferences(callingContext).getInt(CDMS_REGION, 0)]; }
+
+    /**
+     * Returns the CCMP region used to initialize the EMS SDK
+     * @return Returns the CCMP region used to initialize the EMS SDK
+     */
+    public Region getRegion() { return getRegion(this.context); }
 
     private void setRegion(Region region) {
         SharedPreferences sharedPref = GetPrivateSharedPreferences();
