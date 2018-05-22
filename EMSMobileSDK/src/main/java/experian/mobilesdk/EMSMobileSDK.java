@@ -350,7 +350,8 @@ public class EMSMobileSDK {
      */
     public int getCustomerID() { return getCustomerID(this.context); }
 
-    private void setCustomerID(int customerID) {
+    private void setCustomerID(int customerID) throws InvalidParameterException {
+        if (customerID == 0) { throw new InvalidParameterException("customerID cannot be 0"); }
         SharedPreferences sharedPref = GetPrivateSharedPreferences();
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(CDMS_CUSTID, customerID);
