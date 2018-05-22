@@ -73,9 +73,14 @@ public class EMSMobileSDK {
      * @return returns the registration endpoint consisting of
      * customer id and application id
      */
-    private String RegistrationEndpoint()
+    private String RegistrationEndpoint(int method)
     {
-        return getRegion().getEndpoint() + "/xts/registration/cust/" + getCustomerID() + "/application/" + getAppID() + "/token";
+        String baseUrl = getRegion().getEndpoint() + "/xts/registration/cust/" + getCustomerID() + "/application/" + getAppID();
+        String fullUrl;
+        if ( method == Request.Method.POST || method == Request.Method.DELETE )
+            return baseUrl + "/token";
+        else // PUT
+            return baseUrl + "/registration/" + getPRID() + "/token";
     }
 
     /**
@@ -162,10 +167,12 @@ public class EMSMobileSDK {
      */
     private void SaveRemoteTokenAndSetPRID(boolean pridIsAssigned)
     {
+        int method = pridIsAssigned ? Request.Method.PUT : Request.Method.POST;
+
         VolleySender.getInstance(context).addToRequestQueue(
             new EMSJSONObjectRequest(
-                pridIsAssigned ? Request.Method.PUT : Request.Method.POST,
-                RegistrationEndpoint(),
+                method,
+                RegistrationEndpoint(method),
                 TokenSubmissionJsonBody(),
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -193,7 +200,7 @@ public class EMSMobileSDK {
         VolleySender.getInstance(context).addToRequestQueue(
             new EMSStringRequest(
                     Request.Method.DELETE,
-                    RegistrationEndpoint(),
+                    RegistrationEndpoint(Request.Method.DELETE),
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
@@ -265,21 +272,16 @@ public class EMSMobileSDK {
         SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
         String storedToken = sharedPref.getString(CDMS_TOKEN, "");
         if (!storedToken.equals(token)) {
-            //Register this token and get PRID
-            int method = Request.Method.POST;
             String storedPRID = getPRID();
-            if (storedPRID != null) {
-                //Update Device Registration - HTTP PUT
-                method = Request.Method.PUT;
-            }
+            //Register this token and get PRID
+            int method = storedPRID != null ? Request.Method.PUT : Request.Method.POST;
             JSONObject body = new JSONObject();
             try {
                 body.put("DeviceToken", token);
             } catch (JSONException ex) {
                 Log.d(TAG, "Unable to set device token in body");
             }
-            String url = getRegion().getEndpoint() + "/xts/registration/cust/" + getCustomerID() + "/application/" + getAppID() + "/token";
-            EMSJSONObjectRequest req = new EMSJSONObjectRequest(method, url, body, new Response.Listener<JSONObject>() {
+            EMSJSONObjectRequest req = new EMSJSONObjectRequest(method, RegistrationEndpoint(method) , body, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     try {
@@ -296,7 +298,7 @@ public class EMSMobileSDK {
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.d(TAG, "Unable to request prid");
+                    Log.d(TAG, "Unable to request prid: " + error.getMessage());
                 }
             });
             VolleySender.getInstance(context).addToRequestQueue(req);
