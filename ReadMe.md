@@ -378,12 +378,19 @@ public class IDService extends FirebaseInstanceIdService {
         FirebaseInstanceIdService fid = new FirebaseInstanceIdService();
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "Refreshed token: " + refreshedToken);
+        try {
+            EMSMobileSDK.Default().initFromContext(getApplicationContext());
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG,"Error initializing EMSMobileSDK solely from application context. The SDK must first be initialized with customer mobile application settings");
+        }
         EMSMobileSDK.Default().setToken(getApplicationContext(), refreshedToken);
     }
 }
 ```
 
-> NOTE:  If you choose to override this default functionality, be sure to call **EMSMobileSDK.Default().setToken()** passing in the token received from Firebase or future notifications will not be received from CCMP.
+> NOTE:  If you choose to override this default functionality, be sure to call both the `EMSMobileSDK.Default().initFromContext()`, and `EMSMobileSDK.Default().setToken()` methods passing in the application context and token received from Firebase respectively, or future notifications will not be received from CCMP.
 
 ------
 
@@ -394,9 +401,9 @@ The EMS Mobile SDK handles data push notifications by registering an instance of
 #### Manifest
 
 ```xml
-<receiver android:name="PushReceiver" android:enabled="true">
+<receiver android:name=".MyPushReceiverClass" android:enabled="true">
     <intent-filter>
-        <action android:name="com.experian.mobilesdk.EMS_PUSH_RECEIVED" />
+        <action android:name="${packageName}.EMS_PUSH_RECEIVED" />
         <category android:name="android.intent.category.DEFAULT" />
     </intent-filter>
 </receiver>
@@ -405,18 +412,20 @@ The EMS Mobile SDK handles data push notifications by registering an instance of
 #### Receiver
 
 ```java
-public class PushReceiver extends BroadcastReceiver {
+public class MyPushReceiverClass extends BroadcastReceiver {
 
     /**
      * Received broadcast notifications
-      * @param context
+     * @param context
      * @param intent
      */
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(EMSIntents.EMS_PUSH_RECEIVED)) {
-          ... Your Code Here
+          // Your Code Here
         }
+    }
+}
 ```
 
 ------
