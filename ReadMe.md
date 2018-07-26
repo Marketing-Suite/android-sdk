@@ -254,6 +254,37 @@ In order to add an app to CCMP, you'll need to have the package name on Google.
                    Region.NORTH_AMERICA_SANDBOX);
    ```
 
+## Using Deep Link
+
+The SDK offers a method to handle deep links from Marketing Suite, the call to EMSMobileSDK.Default().HandleDeepLink will parse the incoming deep link URL and returns the original URL along with the Deep Link Parameter entered on CCMP (if any)
+
+> Note:  You first need to configure the app to handle universal links, add in the manifest.xml the following intent-filter. The values in the intent-filter here are used as an example, in this case "rts.eccmp.com" which will handle links of the type "http://rts.eccmp.com"
+```xml
+<intent-filter>
+	<action android:name="android.intent.action.VIEW" />
+	<category android:name="android.intent.category.DEFAULT" />
+	<category android:name="android.intent.category.BROWSABLE" />
+	<data android:scheme="http"
+		android:host="rts.eccmp.com"/>
+</intent-filter>
+```
+
+```java
+protected void onCreate(Bundle savedInstanceState) {
+...
+Intent intent = getIntent();
+
+if(intent.getAction() == "android.intent.action.VIEW"){
+            EMSDeepLink deepLink = EMSMobileSDK.Default().HandleDeepLink(intent);
+            
+			//deeplink.getDeepLinkParameter() - dl parameter from CCMP if any; example value: "param"
+			//deeplink.getDeepLinkUrl()		  - Original Deep link URL; example value: "http://rts.eccmp.com/rts/go2.aspx?dl=param"
+	}
+}
+```
+
+
+
 ## EMSMobileSDK Methods and Properties
 
 ### Properties
@@ -310,6 +341,14 @@ The `apiPost` method is used to post data from the app to a form hosted in CCMP.
 - **formId** -- the form ID from CCMP for the form you want to post data to
 - **data** -- A key/value structure of the fields and values you want to post to the form
 - **callback** -- A class that implements the IEMSPostCallback::onDataSent(VolleyError error) method.  This method is called when the API Post is complete.  If the error parameter passed to the method is null, the API Post was successful, otherwise the error will have the data about what exactly went wrong.
+
+---
+
+#### **HandleDeepLink**(Intent **intent**)
+
+The `HandleDeepLink` function parses the information from the userActivity and returns the original Deep link URL, the Deep link Paramater if any, and finally register the link count on CCMP.
+
+- **intent** -- the intent-filter we set up in our manifest to pass the deep link url values
 
 ---
 

@@ -4,13 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
+
 import com.android.volley.AuthFailureError;
+import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.google.firebase.iid.FirebaseInstanceId;
+import com.android.volley.toolbox.StringRequest;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -570,5 +574,44 @@ public class EMSMobileSDK {
             }
         };
         VolleySender.getInstance(this.context).addToRequestQueue(req);
+    }
+
+    public EMSDeepLink HandleDeepLink(final Intent intent) {
+
+        final EMSDeepLink deepLink = new EMSDeepLink(intent);
+        try {
+            final StringRequest stringRequest = new StringRequest(Request.Method.GET, deepLink.getDeepLinkUrl(),
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.d(TAG, "Deep link url post successfully: " + deepLink.getDeepLinkUrl());
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d(TAG, "Error processing deep link url: " + deepLink.getDeepLinkUrl() +
+                                    ". See error message: " + error.getMessage());
+
+                            if (error instanceof NoConnectionError) {
+                                Log.d(TAG, "No connection service, attempting retry in 30 secs.");
+                                final Handler handler = new Handler();
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        HandleDeepLink(intent);
+                                    }
+                                }, 30000);
+                            }
+                        }
+                    });
+
+            VolleySender.getInstance(this.context).addToRequestQueue(stringRequest);
+
+        } catch (Exception ex) {
+            Log.d(TAG, "Unable to send deep link url request");
+        }
+
+        return deepLink;
     }
 }
