@@ -73,17 +73,18 @@ A Firebase project is a collection of apps that can use a variety of Google API'
 
 ```json
 dependencies {
-		classpath 'com.android.tools.build:gradle:2.2.3'
-		classpath 'com.google.gms:google-services:3.0.0'
+		classpath 'com.android.tools.build:gradle:3.1.3'
+		classpath 'com.google.gms:google-services:4.0.1'
 ...
 ```
 
 7. Open the App Module Gradle script labeled **build.gradle (Module: app)** and add the following dependencies to the bottom of the app dependencies section.
 
 ```json
-compile 'com.google.firebase:firebase-messaging:10.0.1'
-compile 'com.android.volley:volley:1.0.0'
-compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
+implementation 'com.google.firebase:firebase-messaging:10.0.1'
+implementation 'com.google.firebase:firebase-core:11.8.0
+implementation 'com.android.volley:volley:1.0.0'
+implementation 'org.apache.directory.studio:org.apache.commons.io:2.4'
 ```
 
 8. Add **apply plugin: 'com.google.gms.google-services'** to the very bottom othe App Module Gradle file. The App Module Gradle script should look something like this at the end.
@@ -95,14 +96,14 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    compile 'com.android.support:appcompat-v7:25.1.0'
-    testCompile 'junit:junit:4.12'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    testImplementation 'junit:junit:4.12'
 
-    releaseCompile "com.experian.mobilesdk:EMSMobileSDK:$sdk_version"
+    releaseImplementation "com.experian.mobilesdk:EMSMobileSDK:$sdk_version"
 
-    compile 'com.google.firebase:firebase-core:10.0.1'
-    compile 'com.google.firebase:firebase-messaging:10.0.1'
-    compile 'com.android.volley:volley:1.0.0'
+    implementation 'com.google.firebase:firebase-core:11.8.0'
+    implementation 'com.google.firebase:firebase-messaging:11.8.0'
+    implementation 'com.android.volley:volley:1.0.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

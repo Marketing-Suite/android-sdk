@@ -37,11 +37,13 @@ public class MessagingService extends FirebaseMessagingService {
 
             //Send Message to App via LocalBroadcastManager
             Intent intent = new Intent(getApplicationContext().getPackageName() + EMSIntents.EMS_PUSH_RECEIVED);
+            intent.setPackage(getApplicationContext().getPackageName());
             intent.putExtra("data",remoteMessage);
             sendBroadcast(intent);
 
             //Send Message to Display Notification
             intent = new Intent(getApplicationContext().getPackageName() + EMSIntents.EMS_SHOW_NOTIFICATION);
+            intent.setPackage(getApplicationContext().getPackageName());
             intent.putExtra("data",remoteMessage);
             sendBroadcast(intent);
         }

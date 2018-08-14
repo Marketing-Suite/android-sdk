@@ -1,10 +1,13 @@
 package experian.mobilesdk;
 
+
 import android.app.NotificationManager;
+import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
@@ -62,7 +65,11 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     //This method is called whenever a Push Notification comes in.
     void displayNotification(Context ctx, JSONObject data){
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctx);
+        String title = "";
+        String body = "";
+        String channelId = ctx.getString(R.string.default_notification_channel_id);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctx,channelId);
 
         // set default icon
         mBuilder.setSmallIcon(R.drawable.notification_icon);
@@ -70,19 +77,22 @@ public class NotificationReceiver extends BroadcastReceiver {
         //Attempts to extract the tile from the Push Notification.
         if (data.has("title")){
             try {
-                mBuilder.setContentTitle(data.getString("title"));
+                title = data.getString("title");
+                mBuilder.setContentTitle(title);
             } catch (JSONException e) {
                 mBuilder.setContentTitle("");
             }
         }
 
         //Attempts to extract the tile from the Push Notification.
-        if (data.has("body")) try {
-            mBuilder.setContentText(data.getString("body"));
-        } catch (JSONException e) {
-            mBuilder.setContentText("");
+        if (data.has("body")) {
+            try {
+                body = data.getString("body");
+                mBuilder.setContentText(body);
+            } catch (JSONException e) {
+                mBuilder.setContentText("");
+            }
         }
-
 
         Intent resultIntent =  new Intent(ctx.getPackageName() + EMSIntents.EMS_OPEN_NOTIFICATION);
         try {
@@ -95,6 +105,15 @@ public class NotificationReceiver extends BroadcastReceiver {
         mBuilder.setContentIntent(resultPendingIntent);
         mBuilder.setAutoCancel(true);
         NotificationManager mNotifyMgr =  (NotificationManager) ctx.getSystemService(NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel channel = new NotificationChannel(channelId,title,NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(body);
+
+            mNotifyMgr.createNotificationChannel(channel);
+            mBuilder.setChannelId(channelId);
+        }
+
         mNotifyMgr.notify(NOTIFICATION_TAG, NOTIFICATION_ID, mBuilder.build());
     }
 }
