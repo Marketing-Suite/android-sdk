@@ -68,6 +68,8 @@ public class NotificationReceiver extends BroadcastReceiver {
         String title = "";
         String body = "";
         String channelId = ctx.getString(R.string.default_notification_channel_id);
+        String channelName = ctx.getString(R.string.default_notification_channel_name);
+
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctx,channelId);
 
@@ -107,7 +109,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         NotificationManager mNotifyMgr =  (NotificationManager) ctx.getSystemService(NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            NotificationChannel channel = new NotificationChannel(channelId,title,NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel channel = new NotificationChannel(channelId,channelName,NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription(body);
 
             mNotifyMgr.createNotificationChannel(channel);
