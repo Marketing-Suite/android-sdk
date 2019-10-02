@@ -491,6 +491,10 @@ The EMS Mobile SDK displays basic notification information received from Firebas
 </receiver>
 ```
 
+### Override Notification Channel Name
+The EMS Mobile SDK uses **default_notification_channel_name** to create the notification channel name. By default, notification channel name is **EMS Channel**.  The app developer can override this by overriding  **default_notification_channel_name**  in **strings.xml**
+
+
 #### Receiver
 
 The following is the default behavior defined by the SDK in the NotificationReceiver.  
