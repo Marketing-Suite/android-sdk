@@ -69,11 +69,11 @@ A Firebase project is a collection of apps that can use a variety of Google API'
 
 **Note:** On the next screen gives instructions on how to finish integrating Firebase into your app. These instructions will be amended with additional information below. Click **Continue**, then **Finish** on the last screen to add the app to the Firebase Project. 
 
-6. In Android Studio, open the Project Gradle script labeled **build.gradle (Project: yourProject)** and add **classpath 'com.google.gms:google-services:3.0.0'** the to the project dependencies.
+6. In Android Studio, open the Project Gradle script labeled **build.gradle (Project: yourProject)** and add **classpath 'com.google.gms:google-services:4.0.1'** the to the project dependencies.
 
 ```json
 dependencies {
-		classpath 'com.android.tools.build:gradle:3.1.3'
+		classpath 'com.android.tools.build:gradle:3.3.2'
 		classpath 'com.google.gms:google-services:4.0.1'
 ...
 ```
@@ -82,7 +82,7 @@ dependencies {
 
 ```json
 implementation 'com.google.firebase:firebase-messaging:10.0.1'
-implementation 'com.google.firebase:firebase-core:11.8.0
+implementation 'com.google.firebase:firebase-core:11.8.0'
 implementation 'com.android.volley:volley:1.0.0'
 implementation 'org.apache.directory.studio:org.apache.commons.io:2.4'
 ```
@@ -92,7 +92,7 @@ implementation 'org.apache.directory.studio:org.apache.commons.io:2.4'
 ```json
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
@@ -117,48 +117,69 @@ apply plugin: 'com.google.gms.google-services'
 
 ![Sync Now](images/sync-now.png)
 
-11. Right click on the app module and select **Open Module Settings**. Click the **Dependencies** tab, click the **+** icon, then select **Module Dependency**.
+
 
 ## Integrate the SDK with an App
 
-Back in Android Studio with the project open, you can now add the SDK to the App.
 
-1. Copy the ExperianMobileSDK.aar file into the **libs** folder in the app. This folder is usually found relative to the project at "Project\app\libs", such as "MyCoolApp\app\libs" in the running example.
+1. Get the Marketing Suite Android SDK project from Github. 
 
-2. From the **File** menu, select **New** -> **New Module**.
+ 	Link can be found here: [https://github.com/Marketing-Suite/android-sdk](https://github.com/Marketing-Suite/android-sdk).
+ 	
+ 	You may clone/download the project by clicking the green button on the right hand side. Make sure to remember the location of the project file as this will be needed for the succeeding steps.  
+ 	![Github](images/github.jpg)
 
-3. From the **New Module** gallery, select **Import JAR/AAR Packag**e and click **Next**.
+1. Back in Android Studio with the project open, you can now add the SDK to the App. From the **File** menu, select **New** -> **New Module**.
+
+1. From the **New Module** gallery, select **Import Gradle Project and** click **Next**.
 
 ![Add and Android App](images/new-module.png)
 
-1. On the next screen, click the **ellipses** (...) icon.
+1. On the next screen, click the **source directory** (...) icon.
 
-2. Find **ExperianMobileSDK.aar** file in the **app\libs** folder, then click **OK**.
+1. Find the location  where **android-sdk** folder is saved, then click **Finish**.
 
 ![Find SDK](images/find-sdk.png)
 
-1. Android Studio will populate the fields. Click **Finish** to complete the task.
+1. Right-Click on the **Project Structure** located on the left side hand of the Android Studio and click **Open Module Settings**
 
-![Find SDK](images/add-sdk.png)
+![Project Structure](images/project-structure.png)
 
-1. ​
+1. On the **Modules -> app** tab, and click the **app** text, then select **Dependencies** Tab.
+![Dependencies Tab](images/dependencies.png)
 
- ![Module Dependency](images/module-dependency.png)
+1. Click the **+** icon on the lower left corner and choose **Module Dependecy**, then Click **OK**.
+![Dependencies Tab1](images/dependencies-add.png)
 
-1. Select **EMSMobileSDK** and then click **OK**.
+1. Choose the **EMSMobileSDK** and click **OK**
+![Dependencies Tab2](images/dependencies-module.png)
 
-![Module Dependency](images/module-dependency-1.png)
+1. Go to **gradle.properties** and add this code snippet:
+
+`repo=`
+
+`repo_username=admin`
+
+`repo_password=`
+
+`sha=no-sha`
+
+`build_number=no-build-number`
+
+
+![Gradle Properties](images/gradle-properties.png)
+
 
 1. On the Main Activity for the App, add **import experian.mobilesdk.*;** to the imports at the top of the **MainActivity.java**.
 
-2. Paste the following code into the **OnCreate** method.
+1. Paste the following code into the **OnCreate** method.
 
 ```java
 EMSMobileSDK.Default().init(
 	 	getApplicationContext(),
 	 	"APP ID GOES HERE",		//The Application ID	from CCMP 
 	 	100, 					//Customer ID
-	 	Region.NORTH_AMERICA	//The CCMP Region);
+	 	Region.NORTH_AMERICA);	//The CCMP Region
 ```
 
 
@@ -490,6 +511,9 @@ The EMS Mobile SDK displays basic notification information received from Firebas
     </intent-filter>
 </receiver>
 ```
+
+### Override Notification Channel Name
+The EMS Mobile SDK uses **default_notification_channel_name** to create the notification channel name. By default, notification channel name is **EMS Channel**.  The app developer can override this by overriding  **default_notification_channel_name**  in **strings.xml**
 
 #### Receiver
 
