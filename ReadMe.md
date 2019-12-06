@@ -122,10 +122,11 @@ apply plugin: 'com.google.gms.google-services'
 ## Integrate the SDK with an App
 
 There are two import options available for integrating the Marketing Suite SDK into your app:
-1. AAR binaries through S3
-2. Download SDK through Github
 
-### AAR Binaries through S3
+  1. AAR binaries through Maven Dependencies
+  2. Download SDK through Github
+
+### AAR Binaries through Maven Dependencies
 
 1. Add this code on your top-level build.gradle file.
 
@@ -136,7 +137,7 @@ allprojects {
         jcenter()
         mavenCentral()
         maven {
-            url ""https://s3.amazonaws.com/stellar-android""
+            url "https://s3.amazonaws.com/stellar-android"
               }
     }
 }
@@ -145,7 +146,7 @@ allprojects {
 1. On your app-level build.gradle, import the Marketing Suite Android SDK by adding the following:
 
 ```java
-implementation 'com.cheetahdigital.android:EMSMobileSDK:1.1.0:release@aar'
+implementation 'com.cheetahdigital.android:EMSMobileSDK:1.6.1:release@aar'
 ```
 1. Sync your project.  Click **Sync Now**
 
