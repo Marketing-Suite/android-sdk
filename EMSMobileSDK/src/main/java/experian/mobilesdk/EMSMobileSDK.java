@@ -23,13 +23,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Blaize Stewart on 1/17/2017.
- *
  * This is the main entry point for the SDK that is exposed to the User
  * It contains the initialization and the hooks for registering call back events.
  */
 public class EMSMobileSDK {
-    private static EMSMobileSDK instance = new EMSMobileSDK();
+    private static EMSMobileSDK mInstance = new EMSMobileSDK();
 
     //Static keys for SharedPreferences
     private static final String SHARED_PREFERENCES_NAME = "EMSMobileSDK";
@@ -40,68 +38,74 @@ public class EMSMobileSDK {
     private static final String CDMS_REGION = "CDMS_REGION";
     private static final String TAG = "EMS:EMSMobileSDK";
 
-    private Context context;
-    private String appID;
-    private int customerID;
-    private String token;
-    private Region region;
-    private String prid;
+    private Context mContext;
+    private String mAppId;
+    private int mCustomerId;
+    private String mToken;
+    private Region mRegion;
+    private String mPRID;
 
     //Callback interfaces
-    private IEMSPRIDCallback pridCallback;
+    private IEMSPRIDCallback mPRIDCallback;
 
     public static EMSMobileSDK Default() {
-        return instance;
+        return mInstance;
     }
 
     /**
      * @param callingContext the originating android.content.Context object which made this call.
      * @return returns the private shared preferences for the SDK
      */
-    private SharedPreferences GetPrivateSharedPreferences(Context callingContext)
-    {
+    private SharedPreferences getPrivateSharedPreferences(Context callingContext) {
         return callingContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
     /**
-     *
      * @return returns the private shared preferences for the SDK
      */
-    private SharedPreferences GetPrivateSharedPreferences()
-    {
-        return GetPrivateSharedPreferences(this.context);
+    private SharedPreferences getPrivateSharedPreferences() {
+        return getPrivateSharedPreferences(this.mContext);
     }
 
     /**
-     *
      * @return returns the registration endpoint consisting of
      * customer id and application id
      */
-    private String RegistrationEndpoint(int method)
-    {
-        String baseUrl = getRegion().getEndpoint() + "/xts/registration/cust/" + getCustomerID() + "/application/" + getAppID();
-        String fullUrl;
-        if ( method == Request.Method.POST || method == Request.Method.DELETE )
-            return baseUrl + "/token";
+    private String registrationEndpoint(int method) {
+
+        StringBuilder sbUrlBuilder = new StringBuilder();
+        sbUrlBuilder.append(getRegion().getEndpoint())
+                .append("/xts/registration/cust/")
+                .append(getCustomerID())
+                .append("/application/")
+                .append(getAppID());
+
+        if (method == Request.Method.POST || method == Request.Method.DELETE)
+            return sbUrlBuilder.append("/token").toString(); //baseUrl + "/token";
         else // PUT
-            return baseUrl + "/registration/" + getPRID() + "/token";
+            return sbUrlBuilder.append("/registration/")  //baseUrl + "/registration/" + getPRID() + "/token";
+                    .append(getPRID())
+                    .append("/token")
+                    .toString();
     }
 
     /**
      * Returns the prid created by CCMP to identify this device
+     *
      * @param callingContext the originating android.content.Context object which made this call.
      * @return returns the prid created by CCMP to identify this device
      */
     public String getPRID(Context callingContext) {
-        return GetPrivateSharedPreferences(callingContext).getString(CDMS_PRID, null);
+        return getPrivateSharedPreferences(callingContext).getString(CDMS_PRID, null);
     }
 
     /**
      * Returns the prid created by CCMP to identify this device
+     *
      * @return returns the prid created by CCMP to identify this device
      */
     public String getPRID() {
-        return getPRID(this.context);
+        return getPRID(this.mContext);
     }
 
     /**
@@ -110,55 +114,52 @@ public class EMSMobileSDK {
      * and the callback will not be fired.
      *
      * @param prid new PRID to set in object instance
-     *
      */
     private void setPRIDAndFirePRIDCallback(String prid) {
         String originalPRID = getPRID();
         // no-op
-        if ( originalPRID != null && originalPRID.equals(prid)) {
+        if (originalPRID != null && originalPRID.equals(prid)) {
             return;
         }
 
-        SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = mContext.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(CDMS_PRID, prid);
         editor.apply();
-        this.prid = prid;
+        this.mPRID = prid;
         // Don't call the callback in the case that we're null'ing out the PRID
-        if (prid != null && pridCallback != null) {
-            pridCallback.onPRIDReceived(prid);
+        if (prid != null && mPRIDCallback != null) {
+            mPRIDCallback.onPRIDReceived(prid);
         }
     }
 
     /**
      * Returns the Device token assigned by Google Services
+     *
      * @return returns the device token assigned by Google Services
      */
-    public String getToken()
-    {
-        return GetPrivateSharedPreferences().getString(CDMS_TOKEN, "");
+    public String getToken() {
+        return getPrivateSharedPreferences().getString(CDMS_TOKEN, "");
     }
 
     /**
      * This method is called to set the Device token on Init or Refresh
      *
      * @param token The device token received from Google's Firebase
-     *
      */
     public void setToken(String token) {
         String originalToken = getToken();
-        if ( originalToken.equals(token) )
-        {
+        if (originalToken.equals(token)) {
             return;
         }
         // new or updated
-        SaveRemoteTokenAndSetPRID(getPRID() == null);
+        saveRemoteTokenAndSetPRID(getPRID() == null);
 
         // set the token locally
-        SharedPreferences.Editor editor = GetPrivateSharedPreferences().edit();
+        SharedPreferences.Editor editor = getPrivateSharedPreferences().edit();
         editor.putString(CDMS_TOKEN, token);
         editor.apply();
-        this.token = token;
+        this.mToken = token;
 
     }
 
@@ -169,63 +170,62 @@ public class EMSMobileSDK {
      * @param pridIsAssigned boolean indicating whether a PRID has been assigned
      *                       via Marketing Suite for the device token being saved
      */
-    private void SaveRemoteTokenAndSetPRID(boolean pridIsAssigned)
-    {
+    private void saveRemoteTokenAndSetPRID(boolean pridIsAssigned) {
         int method = pridIsAssigned ? Request.Method.PUT : Request.Method.POST;
 
-        VolleySender.getInstance(context).addToRequestQueue(
-            new EMSJSONObjectRequest(
-                method,
-                RegistrationEndpoint(method),
-                TokenSubmissionJsonBody(),
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        setPRIDFromRemoteResponse(response);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.i(TAG, "Error submitting token registration request: " + error.getMessage());
-                    }
-                }
-            )
+        VolleySender.getInstance(mContext).addToRequestQueue(
+                new EMSJSONObjectRequest(
+                        method,
+                        registrationEndpoint(method),
+                        tokenSubmissionJsonBody(),
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                setPRIDFromRemoteResponse(response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.i(TAG, "Error submitting token registration request: " + error.getMessage());
+                            }
+                        }
+                )
         );
     }
 
     /**
      * Mark the token remotely as having been deactivated, indicating push
      * notifications are opted-out for this device.
-     *
      */
-    private void DeactivateRemoteToken()
-    {
-        VolleySender.getInstance(context).addToRequestQueue(
-            new EMSStringRequest(
-                    Request.Method.DELETE,
-                    RegistrationEndpoint(Request.Method.DELETE),
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            Log.i(TAG, String.format("Received response upon deactivating token: %s", response.toString()) );
-                            setPRIDAndFirePRIDCallback(null);
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.i(TAG, String.format("Error submitting registration request.  Error message: %s. Error toString(): %s", error.getMessage(), error.toString() ));
-                        }
-                    }) {
-                @Override
-                public byte[] getBody() { return TokenSubmissionJsonBody().toString().getBytes(); }
+    private void deactivateRemoteToken() {
+        VolleySender.getInstance(mContext).addToRequestQueue(
+                new EMSStringRequest(
+                        Request.Method.DELETE,
+                        registrationEndpoint(Request.Method.DELETE),
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                Log.i(TAG, String.format("Received response upon deactivating token: %s", response.toString()));
+                                setPRIDAndFirePRIDCallback(null);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.i(TAG, String.format("Error submitting registration request.  Error message: %s. Error toString(): %s", error.getMessage(), error.toString()));
+                            }
+                        }) {
+                    @Override
+                    public byte[] getBody() {
+                        return tokenSubmissionJsonBody().toString().getBytes();
+                    }
 
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8";
+                    }
                 }
-            }
         );
     }
 
@@ -236,8 +236,7 @@ public class EMSMobileSDK {
      * @return JSONObject containing the device token, with 'DeviceToken' as the
      * object key.
      */
-    private JSONObject TokenSubmissionJsonBody()
-    {
+    private JSONObject tokenSubmissionJsonBody() {
         JSONObject body = new JSONObject();
         try {
             body.put("DeviceToken", getToken());
@@ -249,14 +248,13 @@ public class EMSMobileSDK {
 
 
     /**
-     *
      * After remote submission of a token, the response is returned as JSON,
      * and parsed here.  If the PRID is new, call {@link #setPRIDAndFirePRIDCallback(String)}
      * *
+     *
      * @param response JSON response containing PRID
      */
-    private void setPRIDFromRemoteResponse(JSONObject response)
-    {
+    private void setPRIDFromRemoteResponse(JSONObject response) {
         try {
             setPRIDAndFirePRIDCallback(response.getString("Push_Registration_Id"));
         } catch (JSONException ex) {
@@ -270,7 +268,6 @@ public class EMSMobileSDK {
      *
      * @param context
      * @param token
-     *
      */
     public void setToken(Context context, String token) {
         SharedPreferences sharedPref = context.getSharedPreferences("EMSMobileSDK", Context.MODE_PRIVATE);
@@ -285,14 +282,14 @@ public class EMSMobileSDK {
             } catch (JSONException ex) {
                 Log.d(TAG, "Unable to set device token in body");
             }
-            EMSJSONObjectRequest req = new EMSJSONObjectRequest(method, RegistrationEndpoint(method) , body, new Response.Listener<JSONObject>() {
+            EMSJSONObjectRequest req = new EMSJSONObjectRequest(method, registrationEndpoint(method), body, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     try {
                         String newPRID = response.getString("Push_Registration_Id");
                         setPRIDAndFirePRIDCallback(newPRID);
-                        if (pridCallback != null) {
-                            pridCallback.onPRIDReceived(newPRID);
+                        if (mPRIDCallback != null) {
+                            mPRIDCallback.onPRIDReceived(newPRID);
                         }
                     } catch (JSONException ex) {
                         Log.d(TAG, "Unable to find prid in response from registration: " + response.toString());
@@ -308,86 +305,103 @@ public class EMSMobileSDK {
             VolleySender.getInstance(context).addToRequestQueue(req);
         } else {
             //Force this callback so the developer knows that the prid is available
-            if (pridCallback != null) {
-                pridCallback.onPRIDReceived(getPRID());
+            if (mPRIDCallback != null) {
+                mPRIDCallback.onPRIDReceived(getPRID());
             }
         }
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(CDMS_TOKEN, token);
         editor.apply();
-        Log.d(TAG,"Stored DeviceID: " + token);
-        this.token = token;
+        Log.d(TAG, "Stored DeviceID: " + token);
+        this.mToken = token;
     }
 
-     /**
+    /**
      * Returns the CCMP Application ID used to initialize the EMS SDK
+     *
      * @param callingContext the originating android.content.Context object which made this call.
      * @return Returns the CCMP Application ID used to initialize the EMS SDK
      */
     public String getAppID(Context callingContext) {
-        return GetPrivateSharedPreferences(callingContext).getString(CDMS_APPID, null);
+        return getPrivateSharedPreferences(callingContext).getString(CDMS_APPID, null);
     }
 
     /**
      * Returns the CCMP Application ID used to initialize the EMS SDK
+     *
      * @return Returns the CCMP Application ID used to initialize the EMS SDK
      */
     public String getAppID() {
-        return getAppID(this.context);
+        return getAppID(this.mContext);
     }
 
     private void setAppID(String appID) {
-        SharedPreferences.Editor editor = GetPrivateSharedPreferences().edit();
+        SharedPreferences.Editor editor = getPrivateSharedPreferences().edit();
         editor.putString(CDMS_APPID, appID);
         editor.apply();
-        this.appID = appID;
+        this.mAppId = appID;
     }
 
     /**
      * Returns the CCMP Customer ID used to initialize the EMS SDK
+     *
      * @param callingContext the originating android.content.Context object which made this call.
      * @return Returns the CCMP Customer ID used to initialize the EMS SDK
      */
-    public int getCustomerID(Context callingContext) { return GetPrivateSharedPreferences(callingContext).getInt(CDMS_CUSTID, 0); }
+    public int getCustomerID(Context callingContext) {
+        return getPrivateSharedPreferences(callingContext).getInt(CDMS_CUSTID, 0);
+    }
 
     /**
      * Returns the CCMP Customer ID used to initialize the EMS SDK
+     *
      * @return Returns the CCMP Customer ID used to initialize the EMS SDK
      */
-    public int getCustomerID() { return getCustomerID(this.context); }
+    public int getCustomerID() {
+        return getCustomerID(this.mContext);
+    }
 
     private void setCustomerID(int customerID) throws InvalidParameterException {
-        if (customerID == 0) { throw new InvalidParameterException("customerID cannot be 0"); }
-        SharedPreferences sharedPref = GetPrivateSharedPreferences();
+        if (customerID == 0) {
+            throw new InvalidParameterException("customerID cannot be 0");
+        }
+        SharedPreferences sharedPref = getPrivateSharedPreferences();
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(CDMS_CUSTID, customerID);
         editor.apply();
-        this.customerID = customerID;
+        this.mCustomerId = customerID;
     }
 
     /**
      * Returns the CCMP region used to initialize the EMS SDK
+     *
      * @param callingContext the originating android.content.Context object which made this call.
      * @return Returns the CCMP region used to initialize the EMS SDK
      */
-    public Region getRegion(Context callingContext) { return Region.values()[GetPrivateSharedPreferences(callingContext).getInt(CDMS_REGION, 0)]; }
+    public Region getRegion(Context callingContext) {
+        return Region.values()[getPrivateSharedPreferences(callingContext).getInt(CDMS_REGION, 0)];
+    }
 
     /**
      * Returns the CCMP region used to initialize the EMS SDK
+     *
      * @return Returns the CCMP region used to initialize the EMS SDK
      */
-    public Region getRegion() { return getRegion(this.context); }
+    public Region getRegion() {
+        return getRegion(this.mContext);
+    }
 
     private void setRegion(Region region) {
-        SharedPreferences sharedPref = GetPrivateSharedPreferences();
+        SharedPreferences sharedPref = getPrivateSharedPreferences();
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(CDMS_REGION, region.getValue());
         editor.apply();
-        this.region = region;
+        this.mRegion = region;
     }
 
     /**
      * Returns the Version Code of the EMSMobile SDK library
+     *
      * @return version code
      */
     public int getVersionCode() {
@@ -396,6 +410,7 @@ public class EMSMobileSDK {
 
     /**
      * Returns the Version Name of the EMSMobile SDK library
+     *
      * @return version name
      */
     public String getVersionName() {
@@ -413,7 +428,7 @@ public class EMSMobileSDK {
      * @param customerID the CCMP customer ID for the application
      */
     public void init(Context ctx, String appID, int customerID) {
-        this.init(ctx, this.appID, this.customerID, region.NORTH_AMERICA);
+        this.init(ctx, appID, customerID, mRegion.NORTH_AMERICA);
     }
 
     /**
@@ -425,25 +440,31 @@ public class EMSMobileSDK {
      * @param region     the region for your instance of CCMP
      */
     public void init(Context ctx, String appID, int customerID, Region region) {
-        this.context = ctx;
+        this.mContext = ctx;
         setAppID(appID);
         setCustomerID(customerID);
         setRegion(region);
     }
 
-     /**
+    /**
      * Initialization of the SDK from calling context.  This method assumes previous setting/saving of
      * appID, customerID, and region parameters via a call to the longer-form init()
      *
-     * @param ctx        the application context
+     * @param ctx the application context
      */
-     public void initFromContext(Context ctx) throws Exception {
+    public void initFromContext(Context ctx) throws Exception {
 
         String errorSuffix = " has not been set via init().";
-        if ( ! GetPrivateSharedPreferences(ctx).contains(CDMS_APPID) ) { throw new InvalidParameterException(TAG + "Application Id" + errorSuffix); }
-        if ( ! GetPrivateSharedPreferences(ctx).contains(CDMS_CUSTID) ) { throw new InvalidParameterException(TAG + "Cust Id" + errorSuffix); }
-        if ( ! GetPrivateSharedPreferences(ctx).contains(CDMS_REGION) ) { throw new InvalidParameterException(TAG + "Region" + errorSuffix); }
-        this.context = ctx;
+        if (!getPrivateSharedPreferences(ctx).contains(CDMS_APPID)) {
+            throw new InvalidParameterException(TAG + "Application Id" + errorSuffix);
+        }
+        if (!getPrivateSharedPreferences(ctx).contains(CDMS_CUSTID)) {
+            throw new InvalidParameterException(TAG + "Cust Id" + errorSuffix);
+        }
+        if (!getPrivateSharedPreferences(ctx).contains(CDMS_REGION)) {
+            throw new InvalidParameterException(TAG + "Region" + errorSuffix);
+        }
+        this.mContext = ctx;
     }
 
     /**
@@ -451,8 +472,7 @@ public class EMSMobileSDK {
      * into the foreground.  Typically via the onResume() method within
      * MainActivity.
      */
-    public void NotificationOptInStatusCheck()
-    {
+    public void notificationOptInStatusCheck() {
         /**
          * Matrix of possibilities:
          * Notifications Disabled + PRID Null = no-op
@@ -463,30 +483,26 @@ public class EMSMobileSDK {
          */
 
         boolean pridIsAssigned = getPRID() != null;
-        boolean notificationsEnabled = NotificationsEnabled();
+        boolean notificationsEnabled = isNotificationEnabled();
         // Notifications are enabled at the OS-level and this instance doesn't
         // yet have a PRID assigned remotely - opt in.
-        if (notificationsEnabled && pridIsAssigned == false)
-        {
+        if (notificationsEnabled && pridIsAssigned == false) {
             Log.i(TAG, "Opting device into notifications via Marketing Suite");
-            SaveRemoteTokenAndSetPRID(pridIsAssigned);
+            saveRemoteTokenAndSetPRID(pridIsAssigned);
         }
         // Notifications are disabled at the OS-level, but we have a PRID
         // assigned remotely - opt out.
-        else if (notificationsEnabled == false && pridIsAssigned == true)
-        {
+        else if (notificationsEnabled == false && pridIsAssigned == true) {
             Log.i(TAG, "Opting device out of notifications via Marketing Suite");
-            DeactivateRemoteToken();
+            deactivateRemoteToken();
         }
     }
 
     /**
      * Indicates whether Notifications are enabled for the instance
-     *
      */
-    public boolean NotificationsEnabled()
-    {
-        return NotificationManagerCompat.from(this.context).areNotificationsEnabled();
+    public boolean isNotificationEnabled() {
+        return NotificationManagerCompat.from(this.mContext).areNotificationsEnabled();
     }
 
 
@@ -495,8 +511,8 @@ public class EMSMobileSDK {
      *
      * @param pridCallback
      */
-    public void RegisterPRIDCallback(IEMSPRIDCallback pridCallback) {
-        this.pridCallback = pridCallback;
+    public void registerPRIDCallback(IEMSPRIDCallback pridCallback) {
+        this.mPRIDCallback = pridCallback;
     }
 
     /**
@@ -532,12 +548,13 @@ public class EMSMobileSDK {
 
     /**
      * Performs API Post and notifies callback
-     * @param formId id of form to post
-     * @param data Map of key/value pairs of data to send to form
+     *
+     * @param formId   id of form to post
+     * @param data     Map of key/value pairs of data to send to form
      * @param callback function to be called when post is received
      */
     public void apiPost(final int formId, final Map<String, String> data, final IEMSAPIPostCallback callback) {
-        String url = this.region.getAPIEndpoint() + "/post.aspx";
+        String url = this.mRegion.getAPIEndpoint() + "/post.aspx";
         EMSStringRequest req = new EMSStringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -546,12 +563,11 @@ public class EMSMobileSDK {
             }
         }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError error)
-            {
+            public void onErrorResponse(VolleyError error) {
                 if (callback != null)
                     callback.onDataSent(error);
             }
-        }){
+        }) {
             @Override
             public byte[] getBody() {
                 StringBuilder sb = new StringBuilder();
@@ -562,21 +578,31 @@ public class EMSMobileSDK {
                 }
                 return sb.toString().getBytes();
             }
+
             @Override
             public String getBodyContentType() {
                 return "application/x-www-form-urlencoded";
             }
+
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String,String> params = new HashMap<String, String>();
-                params.put("Content-Type","application/x-www-form-urlencoded");
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/x-www-form-urlencoded");
                 return params;
             }
         };
-        VolleySender.getInstance(this.context).addToRequestQueue(req);
+        VolleySender.getInstance(this.mContext).addToRequestQueue(req);
     }
 
-    public EMSDeepLink HandleDeepLink(final Intent intent) {
+
+    /**
+     * The HandleDeepLink function parses the information from the userActivity and returns the original Deep link URL,
+     * the Deep link Paramater if any, and finally register the link count on CCMP.
+     *
+     * @param intent the intent-filter set up in android manifest to pass the deep link url values
+     * @return original DeepLink URL
+     */
+    public EMSDeepLink handleDeepLink(final Intent intent) {
 
         final EMSDeepLink deepLink = new EMSDeepLink(intent);
         try {
@@ -599,14 +625,14 @@ public class EMSMobileSDK {
                                 handler.postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
-                                        HandleDeepLink(intent);
+                                        handleDeepLink(intent);
                                     }
                                 }, 30000);
                             }
                         }
                     });
 
-            VolleySender.getInstance(this.context).addToRequestQueue(stringRequest);
+            VolleySender.getInstance(this.mContext).addToRequestQueue(stringRequest);
 
         } catch (Exception ex) {
             Log.d(TAG, "Unable to send deep link url request");

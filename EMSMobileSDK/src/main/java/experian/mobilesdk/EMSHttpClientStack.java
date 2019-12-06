@@ -38,6 +38,15 @@ public class EMSHttpClientStack extends HttpClientStack {
         super(client);
     }
 
+    /**
+     * Performs an HTTP request with the given parameters.
+     *
+     * @param request           the request to perform
+     * @param additionalHeaders additional headers to be sent together with Request.getHeaders()
+     * @return the HTTP response
+     * @throws IOException
+     * @throws AuthFailureError
+     */
     @Override
     public HttpResponse performRequest(Request<?> request, Map<String, String> additionalHeaders)
             throws IOException, AuthFailureError {
@@ -54,12 +63,26 @@ public class EMSHttpClientStack extends HttpClientStack {
         return mClient.execute(httpRequest);
     }
 
+    /**
+     * Sets the headers to the HTTP Request
+     *
+     * @param httpRequest httprequest
+     * @param headers     header that wants to be added to the httprequest
+     */
     private static void addHeaders(HttpUriRequest httpRequest, Map<String, String> headers) {
         for (String key : headers.keySet()) {
             httpRequest.setHeader(key, headers.get(key));
         }
     }
 
+    /**
+     * Creates the appropriate subclass of HttpUriRequest for passed in request.
+     *
+     * @param request           the request to perform
+     * @param additionalHeaders additional headers to be sent together with Request.getHeaders()
+     * @return {@link HttpUriRequest}
+     * @throws AuthFailureError
+     */
     static HttpUriRequest createHttpRequest(Request<?> request, Map<String, String> additionalHeaders) throws AuthFailureError {
         switch (request.getMethod()) {
             case Request.Method.DEPRECATED_GET_OR_POST: {
@@ -78,7 +101,7 @@ public class EMSHttpClientStack extends HttpClientStack {
             case Request.Method.GET:
                 return new HttpGet(request.getUrl());
             case Request.Method.DELETE:
-                EMSHttpDelete deleteRequest =  new EMSHttpDelete(request.getUrl());
+                EMSHttpDelete deleteRequest = new EMSHttpDelete(request.getUrl());
                 deleteRequest.addHeader(HEADER_CONTENT_TYPE, request.getBodyContentType());
                 setEntityIfNonEmptyBody(deleteRequest, request);
                 return deleteRequest;
@@ -111,6 +134,13 @@ public class EMSHttpClientStack extends HttpClientStack {
         }
     }
 
+    /**
+     * Set HTTP Entity to  body if body is not empty
+     *
+     * @param httpRequest {@link HttpEntityEnclosingRequestBase}
+     * @param request     {@link Request}
+     * @throws AuthFailureError
+     */
     private static void setEntityIfNonEmptyBody(HttpEntityEnclosingRequestBase httpRequest,
                                                 Request<?> request) throws AuthFailureError {
         byte[] body = request.getBody();
@@ -120,6 +150,9 @@ public class EMSHttpClientStack extends HttpClientStack {
         }
     }
 
+    /**
+     * Class which extends HttpPost
+     */
     private static class EMSHttpDelete extends HttpPost {
         public static final String METHOD_NAME = "DELETE";
 
@@ -131,10 +164,20 @@ public class EMSHttpClientStack extends HttpClientStack {
             super(uri);
         }
 
+        /**
+         * Constructor for {@link EMSHttpDelete}
+         *
+         * @param uri in String format
+         */
         public EMSHttpDelete(String uri) {
             super(uri);
         }
 
+        /**
+         * String which returns value of METHOD_NAME
+         *
+         * @return METHOD_NAME
+         */
         public String getMethod() {
             return METHOD_NAME;
         }

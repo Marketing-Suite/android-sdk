@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
@@ -31,8 +32,9 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     /**
      * Received broadcast notifications
-      * @param context
-     * @param intent
+     *
+     * @param context of the application
+     * @param intent  received by Notification Receiver class
      */
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -44,8 +46,7 @@ public class NotificationReceiver extends BroadcastReceiver {
                 JSONObject jData = new JSONObject(message.getData());
                 displayNotification(context, jData);
             }
-        }
-        else if (intent.getAction().equals(context.getPackageName() + EMSIntents.EMS_OPEN_NOTIFICATION)) {
+        } else if (intent.getAction().equals(context.getPackageName() + EMSIntents.EMS_OPEN_NOTIFICATION)) {
             EMSMobileSDK.Default().pushNotificationRegisterOpen(context, intent);
             // launch app
             try {
@@ -54,30 +55,35 @@ public class NotificationReceiver extends BroadcastReceiver {
                     Log.d(TAG, "Unable to find launch intent");
                 launchIntent.putExtra("EMS_OPEN_FROM_NOTIFICATION", true);
                 context.startActivity(launchIntent);
-                Log.d(TAG,"Leaving Receiver: " + launchIntent.getClass().toString());
-            }
-            catch (Exception ex)
-            {
+                Log.d(TAG, "Leaving Receiver: " + launchIntent.getClass().toString());
+            } catch (Exception ex) {
                 Log.d(TAG, ex.getMessage());
             }
         }
     }
 
-    //This method is called whenever a Push Notification comes in.
-    void displayNotification(Context ctx, JSONObject data){
+
+    /**
+     * Method to display notification
+     * This method is called whenever a Push Notification comes in.
+     *
+     * @param context of the application
+     * @param data    JSON Object received from the Broadcastreceiver
+     */
+    protected void displayNotification(Context context, JSONObject data) {
         String title = "";
         String body = "";
-        String channelId = ctx.getString(R.string.default_notification_channel_id);
-        String channelName = ctx.getString(R.string.default_notification_channel_name);
+        String channelId = context.getString(R.string.default_notification_channel_id);
+        String channelName = context.getString(R.string.default_notification_channel_name);
 
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctx,channelId);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, channelId);
 
         // set default icon
         mBuilder.setSmallIcon(R.drawable.notification_icon);
 
         //Attempts to extract the tile from the Push Notification.
-        if (data.has("title")){
+        if (data.has("title")) {
             try {
                 title = data.getString("title");
                 mBuilder.setContentTitle(title);
@@ -96,20 +102,28 @@ public class NotificationReceiver extends BroadcastReceiver {
             }
         }
 
-        Intent resultIntent =  new Intent(ctx.getPackageName() + EMSIntents.EMS_OPEN_NOTIFICATION);
+        Intent resultIntent;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            resultIntent = new Intent(context, NotificationReceiver.class);
+            resultIntent.setAction(context.getPackageName() + EMSIntents.EMS_OPEN_NOTIFICATION);
+        } else {
+            resultIntent = new Intent(context.getPackageName() + EMSIntents.EMS_OPEN_NOTIFICATION);
+        }
+
         try {
-            resultIntent.putExtra("ems_open",data.getString("ems_open"));
+            resultIntent.putExtra("ems_open", data.getString("ems_open"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        PendingIntent resultPendingIntent = PendingIntent.getBroadcast(ctx, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        PendingIntent resultPendingIntent = PendingIntent.getBroadcast(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         mBuilder.setContentIntent(resultPendingIntent);
         mBuilder.setAutoCancel(true);
-        NotificationManager mNotifyMgr =  (NotificationManager) ctx.getSystemService(NOTIFICATION_SERVICE);
+        NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            NotificationChannel channel = new NotificationChannel(channelId,channelName,NotificationManager.IMPORTANCE_DEFAULT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription(body);
 
             mNotifyMgr.createNotificationChannel(channel);
