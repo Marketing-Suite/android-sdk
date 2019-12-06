@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/EMSMobileSDK/EMSMobileSDK.iml" filepath="$PROJECT_DIR$/EMSMobileSDK/EMSMobileSDK.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/android-github-sdk.iml" filepath="$PROJECT_DIR$/.idea/android-github-sdk.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-sdk.iml" filepath="$PROJECT_DIR$/android-sdk.iml" />
     </modules>
   </component>
