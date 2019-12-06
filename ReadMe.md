@@ -98,8 +98,8 @@ dependencies {
 
     implementation 'com.android.support:appcompat-v7:26.1.0'
     testImplementation 'junit:junit:4.12'
-
-    releaseImplementation "com.experian.mobilesdk:EMSMobileSDK:$sdk_version"
+    
+    implementation 'com.cheetahdigital.android:EMSMobileSDK:$sdk_version:release@aar'
 
     implementation 'com.google.firebase:firebase-core:11.8.0'
     implementation 'com.google.firebase:firebase-messaging:11.8.0'
@@ -120,6 +120,73 @@ apply plugin: 'com.google.gms.google-services'
 
 
 ## Integrate the SDK with an App
+
+There are two import options available for integrating the Marketing Suite SDK into your app:
+1. AAR binaries through S3
+2. Download SDK through Github
+
+### AAR Binaries through S3
+
+1. Add this code on your top-level build.gradle file.
+
+```json
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+        maven {
+            url ""https://s3.amazonaws.com/stellar-android""
+              }
+    }
+}
+```
+
+1. On your app-level build.gradle, import the Marketing Suite Android SDK by adding the following:
+
+```java
+implementation 'com.cheetahdigital.android:EMSMobileSDK:1.1.0:release@aar'
+```
+1. Sync your project.  Click **Sync Now**
+
+
+1. On the Main Activity for the App, add **import experian.mobilesdk.*;** to the imports at the top of the **MainActivity.java**.
+
+1. Paste the following code into the **OnCreate** method.
+
+```java
+EMSMobileSDK.Default().init(
+	 	getApplicationContext(),
+	 	"APP ID GOES HERE",		//The Application ID	from CCMP 
+	 	100, 					//Customer ID
+	 	Region.NORTH_AMERICA);	//The CCMP Region
+```
+
+
+You should have a MainActivity.java that looks similar to this:
+
+```java
+import experian.mobilesdk.*;
+
+public class MainActivity extends AppCompatActivity implements IEMSPRIDCallback {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        //Initialize the SDK with the app context, the app's calling intent, the AppID from CCMP, the Custonmer ID, and the Region.
+        EMSMobileSDK.Default().init(
+                getApplicationContext(),
+                "APP ID GOES HERE",
+                100,
+                Region.NORTH_AMERICA_SANDBOX);
+```
+
+
+
+
+### Download SDK through Github
 
 
 1. Get the Marketing Suite Android SDK project from Github. 
@@ -153,21 +220,6 @@ apply plugin: 'com.google.gms.google-services'
 
 1. Choose the **EMSMobileSDK** and click **OK**
 ![Dependencies Tab2](images/dependencies-module.png)
-
-1. Go to **gradle.properties** and add this code snippet:
-
-`repo=`
-
-`repo_username=admin`
-
-`repo_password=`
-
-`sha=no-sha`
-
-`build_number=no-build-number`
-
-
-![Gradle Properties](images/gradle-properties.png)
 
 
 1. On the Main Activity for the App, add **import experian.mobilesdk.*;** to the imports at the top of the **MainActivity.java**.

@@ -1,9 +1,13 @@
 package experian.mobilesdk;
 
 /**
- * Created by C17045A on 7/7/2017.
+ * Interface which handles the receiving of push registration id
  */
-
 public interface IEMSPRIDCallback {
+    /**
+     * This is called when PRID is received from the server
+     *
+     * @param PRID push registration id
+     */
     public void onPRIDReceived(String PRID);
 }
