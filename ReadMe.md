@@ -81,10 +81,10 @@ dependencies {
 7. Open the App Module Gradle script labeled **build.gradle (Module: app)** and add the following dependencies to the bottom of the app dependencies section.
 
 ```json
-implementation 'com.google.firebase:firebase-messaging:10.0.1'
+implementation 'com.google.firebase:firebase-messaging:11.8.0'
 implementation 'com.google.firebase:firebase-core:11.8.0'
-implementation 'com.android.volley:volley:1.0.0'
-implementation 'org.apache.directory.studio:org.apache.commons.io:2.4'
+implementation 'com.android.volley:volley:1.1.0'
+implementation 'org.apache.directory.studio:org.apache.commons.io:2.6'
 ```
 
 8. Add **apply plugin: 'com.google.gms.google-services'** to the very bottom othe App Module Gradle file. The App Module Gradle script should look something like this at the end.
@@ -98,12 +98,12 @@ dependencies {
 
     implementation 'com.android.support:appcompat-v7:26.1.0'
     testImplementation 'junit:junit:4.12'
-    
+
     implementation 'com.cheetahdigital.android:EMSMobileSDK:$sdk_version:release@aar'
 
     implementation 'com.google.firebase:firebase-core:11.8.0'
     implementation 'com.google.firebase:firebase-messaging:11.8.0'
-    implementation 'com.android.volley:volley:1.0.0'
+    implementation 'com.android.volley:volley:1.1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
@@ -158,7 +158,7 @@ implementation 'com.cheetahdigital.android:EMSMobileSDK:1.6.1:release@aar'
 ```java
 EMSMobileSDK.Default().init(
 	 	getApplicationContext(),
-	 	"APP ID GOES HERE",		//The Application ID	from CCMP 
+	 	"APP ID GOES HERE",		//The Application ID	from CCMP
 	 	100, 					//Customer ID
 	 	Region.NORTH_AMERICA);	//The CCMP Region
 ```
@@ -190,11 +190,11 @@ public class MainActivity extends AppCompatActivity implements IEMSPRIDCallback 
 ### Download SDK through Github
 
 
-1. Get the Marketing Suite Android SDK project from Github. 
+1. Get the Marketing Suite Android SDK project from Github.
 
  	Link can be found here: [https://github.com/Marketing-Suite/android-sdk](https://github.com/Marketing-Suite/android-sdk).
- 	
- 	You may clone/download the project by clicking the green button on the right hand side. Make sure to remember the location of the project file as this will be needed for the succeeding steps.  
+
+ 	You may clone/download the project by clicking the green button on the right hand side. Make sure to remember the location of the project file as this will be needed for the succeeding steps.
  	![Github](images/github.jpg)
 
 1. Back in Android Studio with the project open, you can now add the SDK to the App. From the **File** menu, select **New** -> **New Module**.
@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements IEMSPRIDCallback 
 ```java
 EMSMobileSDK.Default().init(
 	 	getApplicationContext(),
-	 	"APP ID GOES HERE",		//The Application ID	from CCMP 
+	 	"APP ID GOES HERE",		//The Application ID	from CCMP
 	 	100, 					//Customer ID
 	 	Region.NORTH_AMERICA);	//The CCMP Region
 ```
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements IEMSPRIDCallback 
 
 ## Adding the App to CCMP
 
-In order to add an app to CCMP, you'll need to have the package name on Google. 
+In order to add an app to CCMP, you'll need to have the package name on Google.
 
 
 
@@ -351,7 +351,7 @@ Intent intent = getIntent();
 
 if(intent.getAction() == "android.intent.action.VIEW"){
             EMSDeepLink deepLink = EMSMobileSDK.Default().HandleDeepLink(intent);
-            
+
 			//deeplink.getDeepLinkParameter() - dl parameter from CCMP if any; example value: "param"
 			//deeplink.getDeepLinkUrl()		  - Original Deep link URL; example value: "http://rts.eccmp.com/rts/go2.aspx?dl=param"
 	}
@@ -397,7 +397,7 @@ The `init` method initializes the SDK from the application so that Push Notifica
 * **appIntent** -- The Application Intent that was used to start the app using the SDK.
 * **AppID** -- The Application ID from CCMP.
 * **CustomerID** -- The Customer ID that uniquely identifies the user of the applicaiton.
-* **region** -- the CCMP region that the application uses. 
+* **region** -- the CCMP region that the application uses.
 
 ---
 
@@ -405,7 +405,7 @@ The `init` method initializes the SDK from the application so that Push Notifica
 
 The `RegisterPRIDCallback` method registers a callback in the application which is executed when the PRID has been successfully retrieved from CCMP.
 
-* **pridCallback** -- a class that implements the SDK's IEMSPRIDCallback interface. The callback expects a method called onPRIDReceived(String prid) that receives a string containing the PRID returned by CCMP for this application/device instance. 
+* **pridCallback** -- a class that implements the SDK's IEMSPRIDCallback interface. The callback expects a method called onPRIDReceived(String prid) that receives a string containing the PRID returned by CCMP for this application/device instance.
 
 ---
 
@@ -465,7 +465,7 @@ The EMS Mobile SDK responds to any changes in the Firebase DeviceToken by regist
     <intent-filter>
         <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
     </intent-filter>
-</service> 
+</service>
 ```
 
 #### Service
@@ -510,7 +510,7 @@ public class IDService extends FirebaseInstanceIdService {
 
 ### Push Notification Received
 
-The EMS Mobile SDK handles data push notifications by registering an instance of FirebaseMessagingService  in the Android manifest.  If the app developer only wants to be informed of incoming push notifications without changing the default behavior from the SDK, they need only implement a BroadcastReceiver listening for the "com.experian.mobilesdk.EMS_PUSH_RECEIVED" intent.*  
+The EMS Mobile SDK handles data push notifications by registering an instance of FirebaseMessagingService  in the Android manifest.  If the app developer only wants to be informed of incoming push notifications without changing the default behavior from the SDK, they need only implement a BroadcastReceiver listening for the "${packageName}.EMS_PUSH_RECEIVED" intent.*
 
 #### Manifest
 
@@ -552,14 +552,14 @@ The EMS Mobile SDK uses the icon defined in the ""\res\drawable\notification_ico
 
 ### Override Default Notification Display
 
-The EMS Mobile SDK displays basic notification information received from Firebase as part of the default behavior of the FirebaseMessingService instance registered in the Android.manifest file.  The app developer can override the notification display process by implementing a listener for the "com.experian.mobilesdk.EMS_SHOW_NOTIFICATION" intent in the Android.manifest file.
+The EMS Mobile SDK displays basic notification information received from Firebase as part of the default behavior of the FirebaseMessingService instance registered in the Android.manifest file.  The app developer can override the notification display process by implementing a listener for the "${packageName}.EMS_SHOW_NOTIFICATION" intent in the Android.manifest file.
 
 #### Manifest
 
 ```xml
 <receiver android:name="ShowNotificationReceiver" android:enabled="true">
     <intent-filter>
-        <action android:name="com.experian.mobilesdk.EMS_SHOW_NOTIFICATION" />
+        <action android:name="${packageName}.EMS_SHOW_NOTIFICATION" />
         <category android:name="android.intent.category.DEFAULT" />
     </intent-filter>
 </receiver>
@@ -570,7 +570,7 @@ The EMS Mobile SDK uses **default_notification_channel_name** to create the noti
 
 #### Receiver
 
-The following is the default behavior defined by the SDK in the NotificationReceiver.  
+The following is the default behavior defined by the SDK in the NotificationReceiver.
 
 ```java
 public class ShowNotificationReceiver extends BroadcastReceiver {
@@ -637,16 +637,16 @@ public class ShowNotificationReceiver extends BroadcastReceiver {
 
 ------
 
-### Overriding Push Notification Open 
+### Overriding Push Notification Open
 
-The EMS Mobile SDK handles the response to a user opening the application based on touching a displayed push notification by registering a BroadcastReceiver in the AndroidManifest listening for the "com.experian.mobilesdk.EMS_OPEN_NOTIFICATION"  intent.  The app developer can override the default behavior by adding the following to the Android.manifest file.
+The EMS Mobile SDK handles the response to a user opening the application based on touching a displayed push notification by registering a BroadcastReceiver in the AndroidManifest listening for the "${packageName}.EMS_OPEN_NOTIFICATION"  intent.  The app developer can override the default behavior by adding the following to the Android.manifest file.
 
 #### Manifest
 
 ```xml
 <receiver android:name="OpenNotificationReceiver" android:enabled="true">
     <intent-filter>
-        <action android:name="com.experian.mobilesdk.EMS_OPEN_NOTIFICATION" />
+        <action android:name="${packageName}.EMS_OPEN_NOTIFICATION" />
         <category android:name="android.intent.category.DEFAULT" />
     </intent-filter>
 </receiver>
@@ -654,7 +654,7 @@ The EMS Mobile SDK handles the response to a user opening the application based 
 
 #### Receiver
 
-The following is the default Receiver implementation used by the SDK for the "com.experian.mobilesdk.EMS_OPEN_NOTIFICATION" intent.  Note that it will add the boolean value to the Intent's Extras dictionary for use by your application's onCreate method if needed.
+The following is the default Receiver implementation used by the SDK for the "${packageName}.EMS_OPEN_NOTIFICATION" intent.  Note that it will add the boolean value to the Intent's Extras dictionary for use by your application's onCreate method if needed.
 
 ```java
 public class OpenNotificationReceiver extends BroadcastReceiver {
@@ -690,6 +690,3 @@ public class OpenNotificationReceiver extends BroadcastReceiver {
 ### Sequence Diagram
 
 ![Sequence Diagram](images/sequence-diagram.png)
-
-
-
