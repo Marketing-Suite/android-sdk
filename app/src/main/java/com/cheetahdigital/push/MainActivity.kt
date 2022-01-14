@@ -47,7 +47,6 @@ class MainActivity : AppCompatActivity(), IEMSPRIDCallback {
         buttonRegister.visibility = View.GONE
         editTextEmail.visibility = View.GONE
         textViewRegistered.visibility = View.VISIBLE
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

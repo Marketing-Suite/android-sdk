@@ -29,7 +29,6 @@ public class MessagingService extends FirebaseMessagingService {
 
     /**
      * This event fires when a Push Notification is received from Firebase and the application is running or in the background.
-     *
      * @param remoteMessage {@link RemoteMessage} received from Firebase
      */
     @Override
@@ -43,13 +42,13 @@ public class MessagingService extends FirebaseMessagingService {
             //Send Message to App via LocalBroadcastManager
             Intent intent = new Intent(getApplicationContext().getPackageName() + EMSIntents.EMS_PUSH_RECEIVED);
             intent.setPackage(getApplicationContext().getPackageName());
-            intent.putExtra("data", remoteMessage);
+            intent.putExtra("data",remoteMessage);
             sendBroadcast(intent);
 
             //Send Message to Display Notification
             intent = new Intent(getApplicationContext().getPackageName() + EMSIntents.EMS_SHOW_NOTIFICATION);
             intent.setPackage(getApplicationContext().getPackageName());
-            intent.putExtra("data", remoteMessage);
+            intent.putExtra("data",remoteMessage);
             sendBroadcast(intent);
         }
     }

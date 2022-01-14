@@ -6,7 +6,6 @@ package experian.mobilesdk;
 public interface IEMSPRIDCallback {
     /**
      * This is called when PRID is received from the server
-     *
      * @param PRID push registration id
      */
     public void onPRIDReceived(String PRID);

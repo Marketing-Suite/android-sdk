@@ -1,5 +1,4 @@
 package experian.mobilesdk;
-
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -17,14 +16,13 @@ import com.android.volley.toolbox.HttpStack;
  * https://developer.android.com/training/volley/index.html
  */
 
-class VolleySender {
+public class VolleySender {
     private static VolleySender mInstance;
     private RequestQueue mRequestQueue;
     private static Context mCtx;
 
     /**
      * Constructor for VolleySender
-     *
      * @param context of the application
      */
     private VolleySender(Context context) {
@@ -34,7 +32,6 @@ class VolleySender {
 
     /**
      * Get the instance of the VolleySender
-     *
      * @param context of the application
      * @return instance of {@link VolleySender}
      */
@@ -47,19 +44,16 @@ class VolleySender {
 
     /**
      * Retrieves the {@link RequestQueue}
-     *
      * @return {@link RequestQueue}
      */
     public RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
-
             String userAgent = "volley/0";
             try {
                 String packageName = mCtx.getPackageName();
                 PackageInfo info = mCtx.getPackageManager().getPackageInfo(packageName, 0);
                 userAgent = packageName + "/" + info.versionCode;
-            } catch (PackageManager.NameNotFoundException e) {
-            }
+            } catch (PackageManager.NameNotFoundException e) {}
             HttpStack httpStack = new EMSHttpClientStack(AndroidHttpClient.newInstance(userAgent));
             mRequestQueue = Volley.newRequestQueue(mCtx, httpStack);
         }
@@ -68,8 +62,8 @@ class VolleySender {
 
     /**
      * Add request to the {@link RequestQueue}
-     *
      * @param req {@link Request}
+     *
      */
     public <T> void addToRequestQueue(Request<T> req) {
         getRequestQueue().add(req);

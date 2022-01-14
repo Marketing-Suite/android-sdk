@@ -25,8 +25,10 @@ public class IDService extends FirebaseInstanceIdService {
         Log.d(TAG, "Refreshed token: " + refreshedToken);
         try {
             EMSMobileSDK.Default().initFromContext(getApplicationContext());
-        } catch (Exception e) {
-            Log.e(TAG, "Error initializing EMSMobileSDK solely from application context. The SDK must first be initialized with customer mobile application settings");
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG,"Error initializing EMSMobileSDK solely from application context. The SDK must first be initialized with customer mobile application settings");
         }
         EMSMobileSDK.Default().setToken(getApplicationContext(), refreshedToken);
     }

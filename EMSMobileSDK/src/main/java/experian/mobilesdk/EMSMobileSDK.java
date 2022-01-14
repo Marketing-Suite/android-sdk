@@ -30,13 +30,14 @@ public class EMSMobileSDK {
     private static EMSMobileSDK mInstance = new EMSMobileSDK();
 
     //Static keys for SharedPreferences
-    private static final String SHARED_PREFERENCES_NAME = "EMSMobileSDK";
-    private static final String CDMS_PRID = "CDMS_PRID";
-    private static final String CDMS_CUSTID = "CDMS_CUSTID";
-    private static final String CDMS_APPID = "CDMS_APPID";
-    private static final String CDMS_TOKEN = "CDMS_TOKEN";
-    private static final String CDMS_REGION = "CDMS_REGION";
-    private static final String TAG = "EMS:EMSMobileSDK";
+    public static final String TAG = "EMS:EMSMobileSDK";
+    public static final String SHARED_PREFERENCES_NAME = "EMSMobileSDK";
+    public static final String CDMS_PRID = "CDMS_PRID";
+    public static final String CDMS_CUSTID = "CDMS_CUSTID";
+    public static final String CDMS_APPID = "CDMS_APPID";
+    public static final String CDMS_TOKEN = "CDMS_TOKEN";
+    public static final String CDMS_REGION = "CDMS_REGION";
+    public static final String EXTRA_EMS = "ems_open";
 
     private Context mContext;
     private String mAppId;
@@ -169,64 +170,68 @@ public class EMSMobileSDK {
      *
      * @param pridIsAssigned boolean indicating whether a PRID has been assigned
      *                       via Marketing Suite for the device token being saved
+     * @return current request that is either queued or processed
      */
-    private void saveRemoteTokenAndSetPRID(boolean pridIsAssigned) {
+    public EMSJSONObjectRequest saveRemoteTokenAndSetPRID(boolean pridIsAssigned) {
         int method = pridIsAssigned ? Request.Method.PUT : Request.Method.POST;
 
-        VolleySender.getInstance(mContext).addToRequestQueue(
-                new EMSJSONObjectRequest(
-                        method,
-                        registrationEndpoint(method),
-                        tokenSubmissionJsonBody(),
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                setPRIDFromRemoteResponse(response);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.i(TAG, "Error submitting token registration request: " + error.getMessage());
-                            }
-                        }
-                )
+        EMSJSONObjectRequest emsjsonObjectRequest = new EMSJSONObjectRequest(
+                method,
+                registrationEndpoint(method),
+                tokenSubmissionJsonBody(),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        setPRIDFromRemoteResponse(response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.i(TAG, "Error submitting token registration request: " + error.getMessage());
+                    }
+                }
         );
+
+        VolleySender.getInstance(mContext).addToRequestQueue(emsjsonObjectRequest);
+        return emsjsonObjectRequest;
     }
 
     /**
      * Mark the token remotely as having been deactivated, indicating push
      * notifications are opted-out for this device.
+     *
+     * @return current request that is either queued or processed
      */
-    private void deactivateRemoteToken() {
-        VolleySender.getInstance(mContext).addToRequestQueue(
-                new EMSStringRequest(
-                        Request.Method.DELETE,
-                        registrationEndpoint(Request.Method.DELETE),
-                        new Response.Listener<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                Log.i(TAG, String.format("Received response upon deactivating token: %s", response.toString()));
-                                setPRIDAndFirePRIDCallback(null);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.i(TAG, String.format("Error submitting registration request.  Error message: %s. Error toString(): %s", error.getMessage(), error.toString()));
-                            }
-                        }) {
+    public EMSStringRequest deactivateRemoteToken() {
+        EMSStringRequest emsStringRequest = new EMSStringRequest(
+                Request.Method.DELETE,
+                registrationEndpoint(Request.Method.DELETE),
+                new Response.Listener<String>() {
                     @Override
-                    public byte[] getBody() {
-                        return tokenSubmissionJsonBody().toString().getBytes();
+                    public void onResponse(String response) {
+                        Log.i(TAG, String.format("Received response upon deactivating token: %s", response.toString()));
+                        setPRIDAndFirePRIDCallback(null);
                     }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.i(TAG, String.format("Error submitting registration request.  Error message: %s. Error toString(): %s", error.getMessage(), error.toString()));
+                    }
+                }) {
+            @Override
+            public byte[] getBody() {
+                return tokenSubmissionJsonBody().toString().getBytes();
+            }
 
-                    @Override
-                    public String getBodyContentType() {
-                        return "application/json; charset=utf-8";
-                    }
-                }
-        );
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+        };
+        VolleySender.getInstance(mContext).addToRequestQueue(emsStringRequest);
+        return emsStringRequest;
     }
 
     /**
@@ -453,26 +458,27 @@ public class EMSMobileSDK {
      * @param ctx the application context
      */
     public void initFromContext(Context ctx) throws Exception {
-
+        this.mContext = ctx;
         String errorSuffix = " has not been set via init().";
         if (!getPrivateSharedPreferences(ctx).contains(CDMS_APPID)) {
-            throw new InvalidParameterException(TAG + "Application Id" + errorSuffix);
+            throw new InvalidParameterException(TAG + " Application Id" + errorSuffix);
         }
         if (!getPrivateSharedPreferences(ctx).contains(CDMS_CUSTID)) {
-            throw new InvalidParameterException(TAG + "Cust Id" + errorSuffix);
+            throw new InvalidParameterException(TAG + " Cust Id" + errorSuffix);
         }
         if (!getPrivateSharedPreferences(ctx).contains(CDMS_REGION)) {
-            throw new InvalidParameterException(TAG + "Region" + errorSuffix);
+            throw new InvalidParameterException(TAG + " Region" + errorSuffix);
         }
-        this.mContext = ctx;
     }
 
     /**
      * This method should be called whenever the application is brought back
      * into the foreground.  Typically via the onResume() method within
      * MainActivity.
+     *
+     * @return current request that is either queued or processed
      */
-    public void notificationOptInStatusCheck() {
+    public Request notificationOptInStatusCheck() {
         /**
          * Matrix of possibilities:
          * Notifications Disabled + PRID Null = no-op
@@ -488,14 +494,15 @@ public class EMSMobileSDK {
         // yet have a PRID assigned remotely - opt in.
         if (notificationsEnabled && pridIsAssigned == false) {
             Log.i(TAG, "Opting device into notifications via Marketing Suite");
-            saveRemoteTokenAndSetPRID(pridIsAssigned);
+            return saveRemoteTokenAndSetPRID(pridIsAssigned);
         }
         // Notifications are disabled at the OS-level, but we have a PRID
         // assigned remotely - opt out.
         else if (notificationsEnabled == false && pridIsAssigned == true) {
             Log.i(TAG, "Opting device out of notifications via Marketing Suite");
-            deactivateRemoteToken();
+            return deactivateRemoteToken();
         }
+        return null;
     }
 
     /**
@@ -516,17 +523,24 @@ public class EMSMobileSDK {
     }
 
     /**
+     * @return callback registered, null if no callback is registered
+     */
+    public IEMSPRIDCallback getPRIDCallback() {
+        return mPRIDCallback;
+    }
+
+    /**
      * This method is called to process the ems_open url either by the SDK NotificationReciever or
      * can be called directly from an overriden receiver in app code.
      *
      * @param ctx
      * @param intent
      */
-    public void pushNotificationRegisterOpen(Context ctx, Intent intent) {
+    public EMSStringRequest pushNotificationRegisterOpen(Context ctx, Intent intent) {
         Bundle extras = intent.getExtras();
         if (extras != null) {
             //If the ems_open property is set, CCMP is notified that the application was opened by way of a Notification Tap.
-            String ems_open = extras.getString("ems_open");
+            String ems_open = extras.getString(EXTRA_EMS);
             if (ems_open != null) {
                 Log.d(TAG, "App Open URL: " + ems_open);
                 EMSStringRequest req = new EMSStringRequest(Request.Method.GET, ems_open, new Response.Listener<String>() {
@@ -542,8 +556,10 @@ public class EMSMobileSDK {
 
                 });
                 VolleySender.getInstance(ctx).addToRequestQueue(req);
+                return req;
             }
         }
+        return null;
     }
 
     /**
@@ -553,7 +569,7 @@ public class EMSMobileSDK {
      * @param data     Map of key/value pairs of data to send to form
      * @param callback function to be called when post is received
      */
-    public void apiPost(final int formId, final Map<String, String> data, final IEMSAPIPostCallback callback) {
+    public EMSStringRequest apiPost(final int formId, final Map<String, String> data, final IEMSAPIPostCallback callback) {
         String url = this.mRegion.getAPIEndpoint() + "/post.aspx";
         EMSStringRequest req = new EMSStringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -592,6 +608,7 @@ public class EMSMobileSDK {
             }
         };
         VolleySender.getInstance(this.mContext).addToRequestQueue(req);
+        return req;
     }
 
 
@@ -602,42 +619,35 @@ public class EMSMobileSDK {
      * @param intent the intent-filter set up in android manifest to pass the deep link url values
      * @return original DeepLink URL
      */
-    public EMSDeepLink handleDeepLink(final Intent intent) {
-
+    public StringRequest handleDeepLink(final Intent intent) {
         final EMSDeepLink deepLink = new EMSDeepLink(intent);
-        try {
-            final StringRequest stringRequest = new StringRequest(Request.Method.GET, deepLink.getDeepLinkUrl(),
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            Log.d(TAG, "Deep link url post successfully: " + deepLink.getDeepLinkUrl());
+        final StringRequest stringRequest = new StringRequest(Request.Method.GET, deepLink.getDeepLinkUrl(),
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, "Deep link url post successfully: " + deepLink.getDeepLinkUrl());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d(TAG, "Error processing deep link url: " + deepLink.getDeepLinkUrl() +
+                                ". See error message: " + error.getMessage());
+
+                        if (error instanceof NoConnectionError) {
+                            Log.d(TAG, "No connection service, attempting retry in 30 secs.");
+                            final Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    handleDeepLink(intent);
+                                }
+                            }, 30000);
                         }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.d(TAG, "Error processing deep link url: " + deepLink.getDeepLinkUrl() +
-                                    ". See error message: " + error.getMessage());
+                    }
+                });
 
-                            if (error instanceof NoConnectionError) {
-                                Log.d(TAG, "No connection service, attempting retry in 30 secs.");
-                                final Handler handler = new Handler();
-                                handler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        handleDeepLink(intent);
-                                    }
-                                }, 30000);
-                            }
-                        }
-                    });
-
-            VolleySender.getInstance(this.mContext).addToRequestQueue(stringRequest);
-
-        } catch (Exception ex) {
-            Log.d(TAG, "Unable to send deep link url request");
-        }
-
-        return deepLink;
+        VolleySender.getInstance(this.mContext).addToRequestQueue(stringRequest);
+        return stringRequest;
     }
 }

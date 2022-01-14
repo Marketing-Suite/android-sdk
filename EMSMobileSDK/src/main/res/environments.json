@@ -1,18 +1,6 @@
 {
   "environments": [
     {
-      "name": "Push SandboxF",
-      "region": "North America",
-      "envName": "Push Sandbox",
-      "envStatus": "Sandbox",
-      "envNotes": "Sandbox only - do not use with real data",
-      "endPointPush": "cs.sbox.eccmp.com",
-      "custID": "100",
-      "appIDiOS": "ce64adbd-8082-44be-b74b-f2baa84c242a",
-      "appIDAndroid": "a5090db4-03c6-43dc-9b53-2d6030a23c6e",
-      "appIDWindows": ""
-    },
-    {
       "name": "Production Cust 100F",
       "region": "North America",
       "envName": "Cust 100",
