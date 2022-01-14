@@ -2,6 +2,11 @@
 
 All notable changes to this SDK will be documented in this file.
 
+## [release-1.6.2](https://github.com/Marketing-Suite/android-sdk/releases/tag/release-1.6.2)
+
+### Changed
+* Removal of sandbox url 
+
 ## [release-1.6.0](https://github.com/Marketing-Suite/android-sdk/releases/tag/release-1.5.1)
 
 ### Added
