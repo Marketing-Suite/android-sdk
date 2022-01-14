@@ -4,7 +4,6 @@ package experian.mobilesdk;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
-
 import java.util.HashMap;
 
 
@@ -16,7 +15,6 @@ public class EMSDeepLink {
 
     /**
      * Constructor for Deep link
-     *
      * @param intent deeplink intent
      */
     public EMSDeepLink(Intent intent) {
@@ -25,17 +23,18 @@ public class EMSDeepLink {
 
     /**
      * Get deep link url from the intent
-     *
      * @return Original Deep link URL; example value: "http://rts.eccmp.com/rts/go2.aspx?dl=param"
      */
     public String getDeepLinkUrl() {
-        return mIntent.getData().toString();
+        if (mIntent != null && mIntent.getData() != null) {
+            return mIntent.getData().toString();
+        }
+        return "";
     }
 
     /**
      * get decoded parameter values from CCMP if any in hashmap format
      * example:  http://rts.eccmp.com/rts/go2.aspx?dl=param&page=main&data=url"
-     *
      * @return the decoded values in hashmap format example: hashmap data of (dl,param),(page,main),(data,url)
      */
     public HashMap<String, String> getQueryParameters() {

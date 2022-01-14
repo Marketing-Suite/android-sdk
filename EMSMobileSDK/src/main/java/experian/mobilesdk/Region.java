@@ -5,9 +5,8 @@ package experian.mobilesdk;
  */
 public enum Region {
     NORTH_AMERICA(0),
-    NORTH_AMERICA_SANDBOX(1),
-    EMEA(2),
-    JAPAN(3);
+    EMEA(1),
+    JAPAN(2);
 
     private final int value;
     Region(int value)
@@ -29,8 +28,6 @@ public enum Region {
      */
     public String getEndpoint() {
         switch (this) {
-            case NORTH_AMERICA_SANDBOX:
-                return "http://cs.sbox.eccmp.com";
             case EMEA:
                 return "https://xts.ccmp.eu";
             case JAPAN:
@@ -47,8 +44,6 @@ public enum Region {
      */
     public String getAPIEndpoint() {
         switch (this) {
-            case NORTH_AMERICA_SANDBOX:
-                return "http://cs.sbox.eccmp.com/ats";
             case EMEA:
                 return "https://ats.ccmp.eu/ats";
             case JAPAN:
