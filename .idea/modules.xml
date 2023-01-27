@@ -2,8 +2,15 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/EMSMobileSDK/EMSMobileSDK.iml" filepath="$PROJECT_DIR$/EMSMobileSDK/EMSMobileSDK.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android-sdk.iml" filepath="$PROJECT_DIR$/android-sdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android-sdk.iml" filepath="$PROJECT_DIR$/.idea/modules/android-sdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/EMSMobileSDK/android-sdk.EMSMobileSDK.iml" filepath="$PROJECT_DIR$/.idea/modules/EMSMobileSDK/android-sdk.EMSMobileSDK.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/EMSMobileSDK/android-sdk.EMSMobileSDK.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/EMSMobileSDK/android-sdk.EMSMobileSDK.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/EMSMobileSDK/android-sdk.EMSMobileSDK.main.iml" filepath="$PROJECT_DIR$/.idea/modules/EMSMobileSDK/android-sdk.EMSMobileSDK.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/EMSMobileSDK/android-sdk.EMSMobileSDK.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/EMSMobileSDK/android-sdk.EMSMobileSDK.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/android-sdk.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/android-sdk.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/android-sdk.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/android-sdk.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/android-sdk.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/android-sdk.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/android-sdk.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/android-sdk.app.unitTest.iml" />
     </modules>
   </component>
 </project>

@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "457206831913-iouuebb3cg6itg1oenqea8587nkd0ck9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cheetahdigital.push",
+            "certificate_hash": "966f69c27c0b5f50c82635cfcc5c1c6a9826699d"
+          }
+        },
+        {
           "client_id": "457206831913-mk5s2ons4hk8dpkq6r7b4q5e53dmbe2l.apps.googleusercontent.com",
           "client_type": 3
         }
