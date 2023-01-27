@@ -28,10 +28,10 @@ class FirebaseIDService : FirebaseInstanceIdService() {
     override fun onTokenRefresh() {
         // Get the Firebase Device Token
         var refreshedToken = FirebaseInstanceId.getInstance().token
-        Log.d("Service: token", refreshedToken)
+        refreshedToken?.let { Log.d("Service: token", it) }
 
         // Save the Refreshed token to SharedPreferences
-        val sharedPref : SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
         val editor = sharedPref.edit()
         editor.putString(PREF_TOKEN, refreshedToken)
         editor.remove(PREF_PRID)

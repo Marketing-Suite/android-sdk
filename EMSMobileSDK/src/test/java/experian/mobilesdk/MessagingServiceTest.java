@@ -25,52 +25,61 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
-@PowerMockIgnore({ "org.powermock.*", "org.mockito.*", "org.robolectric.*", "android.*"})
+@PowerMockIgnore({
+  "org.powermock.*",
+  "org.mockito.*",
+  "org.robolectric.*",
+  "android.*",
+  "jdk.internal.reflect.*"
+})
 @PrepareForTest(RemoteMessage.class)
-@Config(sdk=21)
+@Config(sdk = 21)
 public class MessagingServiceTest {
 
-    @Rule
-    public PowerMockRule rule = new PowerMockRule();
+  @Rule public PowerMockRule rule = new PowerMockRule();
 
-    private MessagingService messagingService;
+  private MessagingService messagingService;
 
-    private RemoteMessage remoteMessage;
+  private RemoteMessage remoteMessage;
 
-    private Context context;
+  private Context context;
 
-    @Before
-    public void setup() {
-        remoteMessage = PowerMockito.mock(RemoteMessage.class);
-        messagingService = PowerMockito.spy(new MessagingService());
-        Map<String, String> testMap = new HashMap<>();
-        testMap.put("TEST", "TEST");
-        PowerMockito.when(remoteMessage.getData()).thenReturn(testMap);
+  @Before
+  public void setup() {
+    remoteMessage = PowerMockito.mock(RemoteMessage.class);
+    messagingService = PowerMockito.spy(new MessagingService());
+    Map<String, String> testMap = new HashMap<>();
+    testMap.put("TEST", "TEST");
+    PowerMockito.when(remoteMessage.getData()).thenReturn(testMap);
 
-        context = PowerMockito.spy(RuntimeEnvironment.application);
-        PowerMockito.doReturn(context).when(messagingService).getApplicationContext();
-    }
+    context = PowerMockito.spy(RuntimeEnvironment.application);
+    PowerMockito.doReturn(context).when(messagingService).getApplicationContext();
+  }
 
-    @Test
-    public void testOnMessageReceived_intentBroadcast() {
-        PowerMockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+  @Test
+  public void testOnMessageReceived_intentBroadcast() {
+    PowerMockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object object = invocation.getArguments()[0];
-                if (object instanceof Intent && (
-                        ((Intent) object).getAction().equals(context.getPackageName() +
-                                EMSIntents.EMS_PUSH_RECEIVED) ||
-                                ((Intent) object).getAction().equals(context.getPackageName() +
-                                        EMSIntents.EMS_SHOW_NOTIFICATION)
-                )) {
-                    Assert.assertEquals(remoteMessage, ((Intent) object).getParcelableExtra("data"));
-                    Assert.assertEquals(context.getPackageName(), ((Intent) object).getPackage());
+                if (object instanceof Intent
+                    && (((Intent) object)
+                            .getAction()
+                            .equals(context.getPackageName() + EMSIntents.EMS_PUSH_RECEIVED)
+                        || ((Intent) object)
+                            .getAction()
+                            .equals(context.getPackageName() + EMSIntents.EMS_SHOW_NOTIFICATION))) {
+                  Assert.assertEquals(remoteMessage, ((Intent) object).getParcelableExtra("data"));
+                  Assert.assertEquals(context.getPackageName(), ((Intent) object).getPackage());
                 } else {
-                    Assert.fail();
+                  Assert.fail();
                 }
                 return null;
-            }
-        }).when(messagingService).sendBroadcast(Mockito.any());
-        messagingService.onMessageReceived(remoteMessage);
-    }
+              }
+            })
+        .when(messagingService)
+        .sendBroadcast(Mockito.any());
+    messagingService.onMessageReceived(remoteMessage);
+  }
 }

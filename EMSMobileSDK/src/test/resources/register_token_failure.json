@@ -1,0 +1,6 @@
+{
+  "Message": "An error has occurred.",
+  "ExceptionMessage": "Object reference not set to an instance of an object.",
+  "ExceptionType": "System.NullReferenceException",
+  "StackTrace": "   at Web.Xts.Controllers.RegistrationController.SaveRegistrationTokenInBody(Int32 cust, String application, Token token) in D:\\Jenkins\\workspace\\CCMP\\Build\\MS-ReleaseBuild\\web\\Web.Xts\\Controllers\\RegistrationController.cs:line 112\r\n   at lambda_method(Closure , Object , Object[] )\r\n   at System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.<>c__DisplayClass13.<GetExecutor>b__c(Object instance, Object[] methodParameters)\r\n   at System.Threading.Tasks.TaskHelpers.RunSynchronously[TResult](Func`1 func, CancellationToken cancellationToken)"
+}
